@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">SuperCheap</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main_application">MainActivityApplication</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="signing">Signing</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="create_a_new_account_now">Create a new account now</string>
+    <string name="send_email_verification">send email verification</string>
+    <string name="already_signed">Already signed?</string>
+    <string name="email_verified_i_m_ready_to_continue">Email verified I\'m ready to continue</string>
+    <string name="verification_status">Verification status:</string>
+    <string name="verification_email_sent">\" we sent a verification mail to your email, please visit your email to verify your account\"</string>
+    <string name="history_purchase">History purchase</string>
+    <string name="add_super_to_your_favourite_list">add super to your favourite list</string>
+    <string name="insert_list_of_products">insert list of products</string>
+    <string name="find_single_product">find_single_product</string>
+    <string name="search_product_here">search product here</string>
+    <string name="search_super_here">search super here</string>
+    <string name="upload_list">Upload List</string>
+    <string name="sit_tight_loading">Sit tight, loading..</string>
+    <string name="update">Update</string>
+    <string name="user_name">User Name</string>
+    <string name="city">City</string>
+    <string name="search_in_my_supers">Search In My Supers</string>
+    <string name="super_name">Super Name</string>
+    <string name="total_bill">total bill</string>
+    <string name="remove">Remove</string>
+    <string name="ok">OK</string>
+    <string name="price_f">price: %.2f ₪</string>
+    <string name="manufacturer_name">Manufacturer Name:%s</string>
+    <string name="manufacturer_country">Manufacturer Country:%s</string>
+
+    <string name="price_to_unit_f">Price to Unit: %.2f</string>
+    <string name="item_price">price: %.2f</string>
+</resources>

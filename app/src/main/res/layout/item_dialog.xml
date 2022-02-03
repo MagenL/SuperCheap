@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="302dp"
+    android:layout_height="400dp"
+    app:cardCornerRadius="40dp"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="300dp"
+        android:layout_height="395dp">
+
+
+
+        <TextView
+            android:id="@+id/item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="ItemName" />
+
+        <Button
+            android:id="@+id/btn_remove"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@drawable/btn_shape"
+            android:backgroundTint="#E57373"
+            android:text="@string/remove"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="@+id/btn_ok"
+            app:layout_constraintEnd_toStartOf="@+id/btn_ok"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/btn_ok" />
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_shape"
+            android:backgroundTint="#A5D6A7"
+            android:layout_margin="5dp"
+            android:text="@string/ok"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/btn_remove" />
+
+        <TextView
+            android:id="@+id/tv_total_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/price_f"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@+id/btn_remove"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Price : 19.99₪" />
+
+        <TextView
+            android:id="@+id/tv_manufacturer_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/manufacturer_name"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/tv_manufacturer_country"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/item_name" />
+
+        <TextView
+            android:id="@+id/tv_manufacturer_country"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="@string/manufacturer_country"
+            app:layout_constraintBottom_toTopOf="@+id/tv_unit_of_measure"
+            app:layout_constraintStart_toStartOf="@+id/tv_manufacturer_name"
+            app:layout_constraintTop_toBottomOf="@+id/tv_manufacturer_name" />
+
+        <TextView
+            android:id="@+id/tv_unit_of_measure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Measure"
+            app:layout_constraintBottom_toTopOf="@+id/tv_price_to_unit"
+            app:layout_constraintStart_toStartOf="@+id/tv_manufacturer_country"
+            app:layout_constraintTop_toBottomOf="@+id/tv_manufacturer_country" />
+
+        <TextView
+            android:id="@+id/tv_price_to_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/price_to_unit_f"
+            app:layout_constraintBottom_toTopOf="@+id/tv_total_price"
+            app:layout_constraintStart_toStartOf="@+id/tv_unit_of_measure"
+            app:layout_constraintTop_toBottomOf="@+id/tv_unit_of_measure" />
+
+        <Button
+            android:id="@+id/btn_update_dialog"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:text="@string/update"
+            android:visibility="gone"
+            android:background="@drawable/btn_shape"
+            android:backgroundTint="@color/happy_green"
+            android:layoutDirection="ltr"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_manufacturer_country"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tv_manufacturer_country"
+            app:layout_constraintTop_toTopOf="@+id/tv_manufacturer_country" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.dashboard.DashboardFragment">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/iv_user_image"
+        android:layout_width="83dp"
+        android:layout_height="83dp"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/default_user_pic"
+        app:layout_constraintBottom_toTopOf="@+id/dash_gl_20"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+
+
+    <AutoCompleteTextView
+        android:id="@+id/tv_super_finder"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/add_super_to_your_favourite_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/dash_gl_20" />
+
+    <Button
+        android:id="@+id/btn_add_super"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="add"
+        android:background="@drawable/btn_shape"
+        android:backgroundTint="@color/light_blue"
+        app:layout_constraintEnd_toEndOf="@+id/tv_super_finder"
+        app:layout_constraintStart_toStartOf="@+id/tv_super_finder"
+        app:layout_constraintTop_toBottomOf="@+id/tv_super_finder" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/dash_gl_20"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.20
+" />
+
+    <TextView
+        android:id="@+id/tv_user_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/user_name"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_user_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/iv_user_image"
+        app:layout_constraintTop_toTopOf="@+id/iv_user_image" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_user_supers"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_add_super"
+        tools:layout_height="125dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_friends"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rv_user_supers"
+        tools:layout_height="125dp" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
