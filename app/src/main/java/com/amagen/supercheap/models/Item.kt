@@ -4,7 +4,7 @@ import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 
 
-@Entity(tableName = SUB_TABLE_NAME_ITEMS_ITEM, primaryKeys = ["itemCode","storeId","brandId","itemName"],)
+@Entity(tableName = ITEMS_TABLE, primaryKeys = ["itemCode","storeId","brandId","itemName"],)
 data class Item(
     @SerializedName("PriceUpdateDate")
     val priceUpdateDate:String?,

@@ -1,6 +1,6 @@
 package com.amagen.supercheap.models
 
-const val SUB_TABLE_NAME_ITEMS_ITEM = "ShufersalTableItemItem"
+const val ITEMS_TABLE = "ITEMS_TABLE"
 
 data class StoreId_To_BrandId(
     val storeId: Int,

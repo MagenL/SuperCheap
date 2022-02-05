@@ -7,6 +7,7 @@ plugins {
     id "androidx.navigation.safeargs"
     id 'org.jetbrains.kotlin.android.extensions'
 }
+apply plugin: 'kotlin-android'
 
 android {
     compileSdk 31
@@ -171,6 +172,8 @@ dependencies {
 
     //picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
 
 }

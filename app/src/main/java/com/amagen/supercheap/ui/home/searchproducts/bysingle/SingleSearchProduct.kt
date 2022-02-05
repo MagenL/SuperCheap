@@ -115,13 +115,13 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
         }
         lifecycleScope.launch(Dispatchers.IO) {
             if (mainActivityViewModel.db.FullItemTableDao()
-                    .getShufersalTableById(mySuper!!.storeId).isEmpty()
+                    .getShufersalTableById(mySuper!!.storeId,mySuper.brand).isEmpty()
             ) {
 
                 mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brand))
             } else {
                 Log.d("dbChecker", "this super db is filled already")
-                viewModel.getSuperTableById(mySuper.storeId, mainActivityViewModel.db)
+                viewModel.getSuperTableById(mySuper.storeId,mySuper.brand, mainActivityViewModel.db)
                 checkLastSuperDbUpdate(
                     mySuper,
                     mainActivityViewModel,
@@ -141,6 +141,7 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
                 lifecycleScope.launch(Dispatchers.IO) {
                     viewModel.getSuperTableById(
                         mySuper!!.storeId,
+                        mySuper.brand,
                         mainActivityViewModel.db
                     )
                 }.invokeOnCompletion {

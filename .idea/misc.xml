@@ -3,8 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../../layout/custom_preview.xml" value="0.13177083333333334" />
         <entry key="../../../../layout/custom_preview.xml" value="0.19479166666666667" />
         <entry key="app/src/main/res/drawable/btn_shape.xml" value="0.1055" />
+        <entry key="app/src/main/res/drawable/btn_shape_clicked.xml" value="0.1955" />
+        <entry key="app/src/main/res/drawable/button_background_clicked.xml" value="0.201" />
         <entry key="app/src/main/res/drawable/ic_baseline_assignment_ind_24.xml" value="0.18333333333333332" />
         <entry key="app/src/main/res/drawable/ic_baseline_history.xml" value="0.18541666666666667" />
         <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.1565" />

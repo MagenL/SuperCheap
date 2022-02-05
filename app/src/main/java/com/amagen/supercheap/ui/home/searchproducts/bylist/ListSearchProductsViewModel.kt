@@ -13,8 +13,10 @@ import kotlinx.coroutines.launch
 
 class ListSearchProductsViewModel : ViewModel() {
 
-    private val _itemFromAllSupers = MutableLiveData<List<Item>>()
+    private var _itemFromAllSupers = MutableLiveData<List<Item>>()
     val itemFromAllSupers get() = _itemFromAllSupers
+
+
 
     private val _superAtBrand = MutableLiveData<List<StoreId_To_BrandId>>()
     val superAtBrand get() = _superAtBrand
@@ -23,34 +25,60 @@ class ListSearchProductsViewModel : ViewModel() {
 
     val brandAndStoreStore_ToPrice = ArrayList<BrandAndStore_toPrice>()
 
-    private val _brandAndStore_toItemsMap = HashMap<StoreId_To_BrandId, List<Item>>()
-    val brandAndStore_toItemsMap get() = _brandAndStore_toItemsMap
+
+
+    private val _userBrands= MutableLiveData<List<Int>>()
+    val userBrands get() = _userBrands
+
+    private val searchTerms = StringBuilder()
+    private val brandToFilter =ArrayList<Int>()
+
+    var shufersal:Int=0
+    var victory:Int=0
+    var hcohen:Int=0
+    var mahsaniAshok:Int=0
+    var bareket:Int=0
+
 
     fun clear(){
         _mapStoreToPrice.clear()
         brandAndStoreStore_ToPrice.clear()
-        _brandAndStore_toItemsMap.clear()
     }
 
 
-    fun getDuplicateItemsFromAllSupers(db:ApplicationDB){
+
+
+    fun getDuplicateItemsFromAllSupers(db:ApplicationDB,
+                                       condition:Int?=null
+    ){
+        _itemFromAllSupers= MutableLiveData<List<Item>>()
         viewModelScope.launch(Dispatchers.IO) {
-            _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames())
+            if(condition != null){
+                println(condition)
+                println(db.FullItemTableDao().countItemNames(condition))
+                _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames(condition,shufersal,victory,hcohen,mahsaniAshok,bareket))
+            }else{
+                println(db.FullItemTableDao().countItemNames())
+                _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames())
+            }
+
 
         }
     }
-    fun getAvailableSupersFromItemList(items:List<Item>, db:ApplicationDB){
+    fun getAvailableSupersFromItemList(items:List<Item>, db:ApplicationDB,condition: Boolean=false){
         val _storeAndID = ArrayList<StoreId_To_BrandId>()
         val storeAndIDasSET = ArrayList<StoreId_To_BrandId>()
 
         viewModelScope.launch(Dispatchers.IO) {
-
-
-
             val supersWithMissingItems = ArrayList<StoreId_To_BrandId>()
 
             items.toSet().iterator().forEach {item->
-                _storeAndID.addAll(db.FullItemTableDao().findAllSupersWithUserListItems(item.itemName))
+                if(condition){
+                    _storeAndID.addAll(db.FullItemTableDao().findAllSupersWithUserListItems(item.itemName,shufersal,victory,hcohen,mahsaniAshok,bareket))
+                }else{
+                    _storeAndID.addAll(db.FullItemTableDao().findAllSupersWithUserListItems(item.itemName))
+                }
+
                 _storeAndID.toSet().forEach{
                     //--------------check if super's db contains the selected item----------------//
                     if(db.FullItemTableDao().getPriceFromSuper(it.storeId,it.brandId,item.itemName)==0.0 ||
@@ -79,10 +107,12 @@ class ListSearchProductsViewModel : ViewModel() {
 
 
 
+
+
             }
             storeAndIDasSET.addAll(_storeAndID.toSet())
             storeAndIDasSET.iterator().forEach {
-                if(_mapStoreToPrice[StoreId_To_BrandId(it.storeId,it.brandId)]!=null){
+                if(_mapStoreToPrice[StoreId_To_BrandId(it.storeId,it.brandId)]!=null){git
                     brandAndStoreStore_ToPrice.add(
                         BrandAndStore_toPrice(
                             StoreId_To_BrandId(it.storeId,it.brandId),
@@ -100,6 +130,15 @@ class ListSearchProductsViewModel : ViewModel() {
             _storeAndID.clear()
         }
 
+    }
+    fun getAllBrands(db:ApplicationDB){
+        viewModelScope.launch(Dispatchers.IO) {
+            _userBrands.postValue(db.superTableOfIdAndName().getUserFavBrands())
+        }
+    }
+
+    fun clearTerms() {
+        searchTerms.clear()
     }
 
 

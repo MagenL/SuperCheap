@@ -11,13 +11,11 @@
         android:id="@+id/search_product_from_all_db"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-android:hint="@string/search_product_here"
+        android:hint="@string/search_product_here"
+        android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_chosen_items"
@@ -55,6 +53,114 @@ android:hint="@string/search_product_here"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rv_chosen_items" />
+
+    <HorizontalScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
+            <Button
+                android:id="@+id/btn_search_all_supers"
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:padding="5dp"
+                android:text="@string/all_supers"
+                android:textAllCaps="false"
+                android:background="@drawable/btn_shape"
+                android:backgroundTint="@color/btn_background_when_selected"
+                android:layout_margin="5dp"
+                />
+
+            <Button
+                android:id="@+id/btn_search_shufersal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/shufersal"
+                android:textAllCaps="false"
+                android:background="@drawable/btn_shape"
+                android:backgroundTint="@color/btn_background_when_selected"
+                android:layout_margin="5dp"
+                style="?android:attr/buttonBarButtonStyle"
+                android:visibility="gone"
+                tools:visibility="visible"
+                />
+
+            <Button
+                android:id="@+id/btn_search_victory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/victory"
+                android:textAllCaps="false"
+                android:background="@drawable/btn_shape"
+                android:backgroundTint="@color/btn_background_when_selected"
+                android:layout_margin="5dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                />
+
+            <Button
+                android:id="@+id/btn_search_bareket"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/bareket"
+                android:textAllCaps="false"
+                android:background="@drawable/btn_shape"
+                android:backgroundTint="@color/btn_background_when_selected"
+                android:layout_margin="5dp"
+                style="?android:attr/buttonBarButtonStyle"
+                android:visibility="gone"
+                tools:visibility="visible"
+                />
+
+            <Button
+                android:id="@+id/btn_search_mahsaniashok"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/mahsani_ashok"
+                android:textAllCaps="false"
+                android:background="@drawable/btn_shape"
+                android:backgroundTint="@color/btn_background_when_selected"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginBottom="5dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                />
+
+            <Button
+                android:id="@+id/btn_search_h_cohen"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/h_cohen"
+                android:textAllCaps="false"
+                android:background="@drawable/btn_shape"
+                android:backgroundTint="@color/btn_background_when_selected"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginBottom="5dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                />
+        </LinearLayout>
+
+
+
+    </HorizontalScrollView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,7 +3,6 @@ package com.amagen.supercheap.ui.home.searchproducts.bysingle
 import android.app.Application
 import androidx.lifecycle.*
 import com.amagen.supercheap.database.ApplicationDB
-import com.amagen.supercheap.database.dao.shufersal.ShufersalDao
 import com.amagen.supercheap.models.Item
 import com.amagen.supercheap.models.StoreId_To_BrandId
 import com.amagen.supercheap.models.UserFavouriteSupers
@@ -28,9 +27,9 @@ class SingleSearchProductViewModel(application:Application) : AndroidViewModel(a
             linkToSuper.postValue(db.superTableOfIdAndName().getAllUserFavSupers())
         }
     }
-    fun getSuperTableById(superId:Int, db: ApplicationDB){
+    fun getSuperTableById(superId:Int, superBrand:Int, db: ApplicationDB){
         loadingSingleSearchMLD.postValue(true)
-        itemName.postValue(db.FullItemTableDao().getShufersalTableById(superId))
+        itemName.postValue(db.FullItemTableDao().getShufersalTableById(superId, superBrand ))
         loadingSingleSearchMLD.postValue(false)
     }
 

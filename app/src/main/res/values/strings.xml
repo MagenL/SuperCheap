@@ -37,4 +37,11 @@
 
     <string name="price_to_unit_f">Price to Unit: %.2f</string>
     <string name="item_price">price: %.2f</string>
+    <string name="all_supers">All Supers</string>
+    <string name="mahsani_ashok">Mahsani Ashok</string>
+
+    <string name="shufersal">Shufersal</string>
+    <string name="victory">Victory</string>
+    <string name="bareket">Bareket</string>
+    <string name="h_cohen">H.Cohen</string>
 </resources>
