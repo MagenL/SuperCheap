@@ -91,7 +91,7 @@
                 android:background="@drawable/btn_shape"
                 android:backgroundTint="@color/btn_background_when_selected"
                 android:layout_margin="5dp"
-                style="?android:attr/buttonBarButtonStyle"
+                android:contentDescription="שופרסל"
                 android:visibility="gone"
                 tools:visibility="visible"
                 />
@@ -108,6 +108,7 @@
                 android:layout_margin="5dp"
                 android:visibility="gone"
                 tools:visibility="visible"
+                android:contentDescription="ויקטורי"
                 />
 
             <Button
@@ -123,6 +124,7 @@
                 style="?android:attr/buttonBarButtonStyle"
                 android:visibility="gone"
                 tools:visibility="visible"
+                android:contentDescription="סופר ברקת"
                 />
 
             <Button
@@ -139,6 +141,7 @@
                 android:layout_marginBottom="5dp"
                 android:visibility="gone"
                 tools:visibility="visible"
+                android:contentDescription="מחסני השוק"
                 />
 
             <Button
@@ -155,6 +158,7 @@
                 android:layout_marginBottom="5dp"
                 android:visibility="gone"
                 tools:visibility="visible"
+                android:contentDescription="ח. כהן"
                 />
         </LinearLayout>
 

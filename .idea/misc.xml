@@ -13,13 +13,15 @@
         <entry key="app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.1565" />
         <entry key="app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.18541666666666667" />
         <entry key="app/src/main/res/drawable/loading_screen.xml" value="0.22135416666666666" />
+        <entry key="app/src/main/res/drawable/magnifier.xml" value="0.2025" />
         <entry key="app/src/main/res/drawable/shopping_cart.xml" value="0.3251282051282051" />
         <entry key="app/src/main/res/drawable/storefront.xml" value="0.1565" />
         <entry key="app/src/main/res/layout/activity_main_application.xml" value="0.1" />
         <entry key="app/src/main/res/layout/auth_activity.xml" value="0.23731884057971014" />
         <entry key="app/src/main/res/layout/auto_complete_layout.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/cart_details_layout.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_dashboard.xml" value="0.25" />
-        <entry key="app/src/main/res/layout/fragment_history.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_history.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_login.xml" value="0.22" />
         <entry key="app/src/main/res/layout/fragment_notifications.xml" value="0.3140625" />
@@ -27,12 +29,14 @@
         <entry key="app/src/main/res/layout/item_dialog.xml" value="0.33" />
         <entry key="app/src/main/res/layout/layout_element.xml" value="0.3145833333333333" />
         <entry key="app/src/main/res/layout/layout_pic_name.xml" value="0.3140625" />
-        <entry key="app/src/main/res/layout/list_search_products_fragment.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/list_search_products_fragment.xml" value="0.1" />
         <entry key="app/src/main/res/layout/loading_layout.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/search_for_cart_dialog.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/selected_items_fragment.xml" value="0.22" />
         <entry key="app/src/main/res/layout/single_search_product_fragment.xml" value="0.22" />
         <entry key="app/src/main/res/layout/super_at_brand_with_total_price.xml" value="0.25" />
-        <entry key="app/src/main/res/layout/super_history.xml" value="0.3140625" />
-        <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.16927083333333334" />
+        <entry key="app/src/main/res/layout/super_history.xml" value="0.22" />
+        <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.25" />
       </map>
     </option>
   </component>

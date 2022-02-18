@@ -44,4 +44,11 @@
     <string name="victory">Victory</string>
     <string name="bareket">Bareket</string>
     <string name="h_cohen">H.Cohen</string>
+    <string name="total_2f">total : %.2f</string>
+    <string name="search_cart">search_cart</string>
+    <string name="search_cart_uploader">search cart uploader</string>
+    <string name="cart_created_by_s">cart created by: %s</string>
+    <string name="cart_created_at_s">cart created at: %s</string>
+    <string name="super_name_s">super name: %s</string>
+    <string name="move_to_super">Move To Super</string>
 </resources>

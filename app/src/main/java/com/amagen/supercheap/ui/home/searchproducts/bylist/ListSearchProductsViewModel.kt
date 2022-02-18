@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.amagen.supercheap.database.ApplicationDB
 import com.amagen.supercheap.models.BrandAndStore_toPrice
+import com.amagen.supercheap.models.BrandToId
 import com.amagen.supercheap.models.Item
 import com.amagen.supercheap.models.StoreId_To_BrandId
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,8 @@ class ListSearchProductsViewModel : ViewModel() {
     var mahsaniAshok:Int=0
     var bareket:Int=0
 
+    private val tempArray = ArrayList<Item>()
+
 
     fun clear(){
         _mapStoreToPrice.clear()
@@ -47,22 +50,51 @@ class ListSearchProductsViewModel : ViewModel() {
 
 
 
+    fun setBrandIdForConditionSearch(brandName:String){
+
+        when(brandName){
+            BrandToId.SHUFERSAL.brandName->{
+                shufersal=BrandToId.SHUFERSAL.brandId
+                println("shufersal ==== $shufersal")
+            }
+            BrandToId.VICTORY.brandName->{
+                victory=BrandToId.VICTORY.brandId
+            }
+            BrandToId.SuperBareket.brandName->{
+                bareket=BrandToId.SuperBareket.brandId
+            }
+            BrandToId.HCohen.brandName->{
+                hcohen=BrandToId.HCohen.brandId
+            }
+            BrandToId.MahsaniAshok.brandName->{
+                mahsaniAshok=BrandToId.MahsaniAshok.brandId
+            }
+        }
+    }
+
 
     fun getDuplicateItemsFromAllSupers(db:ApplicationDB,
-                                       condition:Int?=null
+                                       condition:Boolean=false, times:Int=0
     ){
         _itemFromAllSupers= MutableLiveData<List<Item>>()
         viewModelScope.launch(Dispatchers.IO) {
-            if(condition != null){
+            if(condition){
+                println("condition detected cleaning up list")
                 println(condition)
-                println(db.FullItemTableDao().countItemNames(condition))
-                _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames(condition,shufersal,victory,hcohen,mahsaniAshok,bareket))
+
+                println(_itemFromAllSupers.value.toString())
+                println("shufersal ->$shufersal victory -> $victory mahsaniAshok ->$mahsaniAshok bareket -> $bareket hcohen -> $hcohen")
+                _itemFromAllSupers.postValue(db.FullItemTableDao().getItemsByBrand(shufersal,victory,hcohen,mahsaniAshok,bareket))
+
             }else{
-                println(db.FullItemTableDao().countItemNames())
-                _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames())
+                if(times>0){
+                    _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames(db.FullItemTableDao().getUserStoresCount()))
+                }else{
+                    _itemFromAllSupers.postValue(db.FullItemTableDao().countItemNames(times))
+                }
             }
-
-
+        }.invokeOnCompletion {
+            println("downloaded data ")
         }
     }
     fun getAvailableSupersFromItemList(items:List<Item>, db:ApplicationDB,condition: Boolean=false){
@@ -78,7 +110,6 @@ class ListSearchProductsViewModel : ViewModel() {
                 }else{
                     _storeAndID.addAll(db.FullItemTableDao().findAllSupersWithUserListItems(item.itemName))
                 }
-
                 _storeAndID.toSet().forEach{
                     //--------------check if super's db contains the selected item----------------//
                     if(db.FullItemTableDao().getPriceFromSuper(it.storeId,it.brandId,item.itemName)==0.0 ||
@@ -112,12 +143,12 @@ class ListSearchProductsViewModel : ViewModel() {
             }
             storeAndIDasSET.addAll(_storeAndID.toSet())
             storeAndIDasSET.iterator().forEach {
-                if(_mapStoreToPrice[StoreId_To_BrandId(it.storeId,it.brandId)]!=null){git
+                if(_mapStoreToPrice[StoreId_To_BrandId(it.storeId,it.brandId)]!=null){
                     brandAndStoreStore_ToPrice.add(
                         BrandAndStore_toPrice(
                             StoreId_To_BrandId(it.storeId,it.brandId),
                             db.superTableOfIdAndName()
-                                .getStoreNameByBrandAndStoreId(it.storeId,it.brandId),
+                                .getStoreNameByBrandAndStoreIdUserFavTable(it.storeId,it.brandId),
                             _mapStoreToPrice[it]!!
 
                         )

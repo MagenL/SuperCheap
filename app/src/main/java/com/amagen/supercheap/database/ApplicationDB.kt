@@ -11,7 +11,7 @@ import com.amagen.supercheap.models.Item
 import com.amagen.supercheap.models.UserFavouriteSupers
 
 
-const val DB_VERSION=22
+const val DB_VERSION=2
 const val DB_NAME="ApplicationDB"
 @Database(entities = [Item::class, IdToSuperName::class, UserFavouriteSupers::class], version = DB_VERSION)
 abstract class ApplicationDB:RoomDatabase() {

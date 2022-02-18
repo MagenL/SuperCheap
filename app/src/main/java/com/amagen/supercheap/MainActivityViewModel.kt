@@ -4,9 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
 import com.amagen.supercheap.database.ApplicationDB
-import com.amagen.supercheap.models.BrandToId
-import com.amagen.supercheap.models.IdToSuperName
-import com.amagen.supercheap.models.Item
+import com.amagen.supercheap.models.*
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -16,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.NullPointerException
+import java.util.*
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
     val db = ApplicationDB.create(application)
@@ -115,11 +115,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         jsonToSQLTable(itemsJson, superId, brand.brandId)
                     }
 
-
-
-
-
-
                     //check if the db contains dublicated items
                     val arr = db.FullItemTableDao().getAllDuplicateRows(superId)
                     db.FullItemTableDao().deleteAllDuplicateRows(superId)
@@ -130,10 +125,11 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
                 }.invokeOnCompletion {
                     viewModelScope.launch(Dispatchers.Main) {
-                        _downloadAndCreateSuperTableProcess.value=false
+                        _downloadAndCreateSuperTableProcess.value = false
+                        //check if table is in favorite
                     }
-
                 }
+
             }
         }
     }
@@ -157,14 +153,23 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     private fun getNewLink(superId: Int, py: Python, brand: BrandToId):String {
         Log.d("getNewLink:", " store id:"+superId)
-        if(brand == BrandToId.SHUFERSAL){
-            return py.getModule("findSuperLinkByIdDirect")
-                        .callAttr("finder",brand.storeIdBaseURL,superId).toString()
+        try{
+            if(brand == BrandToId.SHUFERSAL){
+                return py.getModule("findSuperLinkByIdDirect")
+                    .callAttr("finder",brand.storeIdBaseURL,superId).toString()
 
-        }else{
-            return py.getModule("find_vic_super_by_id")
-                        .callAttr("getLinkByID",brand.priceBaseURL,superId).toString()
+            }else{
+                return py.getModule("find_vic_super_by_id")
+                    .callAttr("getLinkByID",brand.priceBaseURL,superId).toString()
+            }
+        }catch (e:NullPointerException){
+            println("server probably in maintenance ${e.localizedMessage}")
+            return ""
+        }catch (e:Exception){
+            println("something wrong error: ${e.localizedMessage}")
+            return ""
         }
+
 
     }
 
@@ -202,9 +207,63 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
 
         }
+    }
+
+
+    fun UIUserFavSuper(userSuper:String,brand:Int):String{
+        when(brand){
+            BrandToId.SHUFERSAL.brandId->{
+                if (!userSuper.contains(BrandToId.SHUFERSAL.brandName.toString())) {
+                    return "${BrandToId.SHUFERSAL.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
+                }
+            }
+            BrandToId.VICTORY.brandId->{
+                if (!userSuper.contains(BrandToId.VICTORY.brandName.toString())) {
+                    return "${BrandToId.VICTORY.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
+                }
+            }
+            BrandToId.MahsaniAshok.brandId->{
+                if (!userSuper.contains(BrandToId.MahsaniAshok.brandName.toString())) {
+                    return "${BrandToId.MahsaniAshok.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
+                }
+            }
+            BrandToId.SuperBareket.brandId->{
+                if (!userSuper.contains(BrandToId.SuperBareket.brandName.toString())) {
+                    return "${BrandToId.SuperBareket.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
+                }
+            }
+            BrandToId.HCohen.brandId->{
+                if (!userSuper.contains(BrandToId.HCohen.brandName.toString())) {
+                    return "${BrandToId.HCohen.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
+                }
+            }
+        }
+        return userSuper.filter { char-> !char.isDigit() }
+    }
+
+
+
+
+    fun UISuperName(
+        dbSuperNames: ArrayList<String>,
+        userFavouriteSupers: UserFavouriteSupers?=null,
+        idToSuperName: IdToSuperName?=null
+    ) {
+        val currentSuper = StringBuilder()
+        if(userFavouriteSupers != null){
+            dbSuperNames.add(userFavouriteSupers.superName)
+            currentSuper.append(UIUserFavSuper(userFavouriteSupers.superName,userFavouriteSupers.brand))
+            userFavouriteSupers.superName = currentSuper.toString()
+        }else{
+            dbSuperNames.add(idToSuperName!!.superName)
+            currentSuper.append(UIUserFavSuper(idToSuperName.superName,idToSuperName.brand))
+            idToSuperName.superName = currentSuper.toString()
+        }
 
 
     }
+
+
 
 
 

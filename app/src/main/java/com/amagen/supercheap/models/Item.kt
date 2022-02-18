@@ -39,3 +39,16 @@ data class Item(
     var storeId:Int,
     var brandId:Int
 )
+
+data class ItemFromFB(
+    val itemName:String,
+    val manufacturerName:String?,
+    val manufacturerCountry:String?,
+    val unitQuantity:String?,
+    val quantity:Double?,
+    val unitOfMeasure:String?,
+    val itemPrice:Double,
+    val unitOfMeasurePrice:Double?,
+)
+
+

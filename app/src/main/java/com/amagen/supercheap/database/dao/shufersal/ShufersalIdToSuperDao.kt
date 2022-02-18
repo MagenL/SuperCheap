@@ -20,8 +20,8 @@ interface ShufersalIdToSuperDao {
     @Query("SELECT * FROM $ID_TO_SUPER_NAME")
     suspend fun getShufersalTable(): List<IdToSuperName>
 
-    @Query("select superLink from $ID_TO_SUPER_NAME where storeId=:id ")
-    suspend fun getSuperLink(id:Int):String
+    @Query("select superLink from $ID_TO_SUPER_NAME where storeId=:id  and brand=:brand")
+    suspend fun getSuperLink(id:Int,brand: Int):String
 
 
     @Query("select superName from $ID_TO_SUPER_NAME where superName like '%'|| :name || '%' ")
@@ -65,7 +65,10 @@ interface ShufersalIdToSuperDao {
     fun getLastUpdate():Long
 
     @Query("select superName from $MY_FAV_SUPERS where storeId = :storeid and brand = :brandid")
-    fun getStoreNameByBrandAndStoreId(storeid: Int,brandid:Int):String
+    fun getStoreNameByBrandAndStoreIdUserFavTable(storeid: Int, brandid:Int):String
+
+    @Query("select superName from $ID_TO_SUPER_NAME where storeId = :storeid and brand = :brandid")
+    fun getStoreNameByBrandAndStoreIdGeneralTable(storeid: Int, brandid:Int):String
 
     @Query("select *from $MY_FAV_SUPERS where storeId=:storeid and brand=:brandid")
     fun getUserFavSuperById(storeid: Int, brandid: Int):UserFavouriteSupers

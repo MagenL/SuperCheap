@@ -19,12 +19,10 @@ import com.amagen.supercheap.models.StoreId_To_BrandId
 import com.amagen.supercheap.models.UserFavouriteSupers
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.recycleview.SingleProductRecycleView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.NullPointerException
 import kotlin.collections.ArrayList
 
 class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: StoreId_To_BrandId?=null) : FunctionalFragment(), SingleProductRecycleView.OnItemClickListener{
@@ -33,18 +31,14 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
     val binding get() = _binding!!
     private lateinit var viewModel: SingleSearchProductViewModel
 
-    private lateinit var mainActivityViewModel: MainActivityViewModel
     private val selecetedItems =ArrayList<Item>()
 
-    private val mAuth:FirebaseAuth= FirebaseAuth.getInstance()
-    private val fbProductsReference:DatabaseReference = FirebaseDatabase.getInstance().reference.child("listOfProducts").push()
-    private val fbUserReference:DatabaseReference=FirebaseDatabase.getInstance().reference.child("users").child(mAuth.currentUser?.uid.toString())
     private var currentlySuper:Int=-1
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        viewModel = ViewModelProvider(this).get(SingleSearchProductViewModel::class.java)
+        viewModel = ViewModelProvider(this)[SingleSearchProductViewModel::class.java]
         _binding = SingleSearchProductFragmentBinding.inflate(layoutInflater)
-        mainActivityViewModel = ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
+        setMainActivityViewModel(requireActivity())
         return binding.root
     }
 
@@ -57,14 +51,14 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
 
         viewModel.getAllUserSupers(mainActivityViewModel.db)
 
-
-
-
-        if(items!=null){
-            initUIPageWithItems()
-        }
         binding.rvSingleItem.adapter= SingleProductRecycleView(selecetedItems,this)
         binding.rvSingleItem.layoutManager= LinearLayoutManager(requireContext())
+
+
+        if(storeidToBrandid!=null){
+            initUIPageWithItems()
+        }
+
 
 
         //-------------------------find supers-------------------------//
@@ -76,18 +70,23 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
 
 
         binding.btnUpList.setOnClickListener {
-            fbUserReference.child("shopping").push().setValue(selecetedItems)
-                .addOnCompleteListener {
-                    if(it.isSuccessful && it.isComplete){
-                        Toast.makeText(requireContext(),"list uploaded successfully",Toast.LENGTH_SHORT).show()
-                        selecetedItems.clear()
-                        binding.rvSingleItem.adapter?.notifyDataSetChanged()
+            var superName=""
+            lifecycleScope.launch(Dispatchers.IO) {
+                superName = viewModel.getSuperName(mainActivityViewModel.db,StoreId_To_BrandId(selecetedItems[0].storeId,selecetedItems[0].brandId))
+                superName = mainActivityViewModel.UIUserFavSuper(superName,selecetedItems[0].brandId)
+                viewModel.uploadCartToDB(selecetedItems,superName)
+                lifecycleScope.launch(Dispatchers.Main) {
+                    viewModel.uploadToFirebaseListener.observe(viewLifecycleOwner){
+                        if (it){
+                            Toast.makeText(requireContext(), "uploaded successfully", Toast.LENGTH_SHORT).show()
+                            binding.rvSingleItem.adapter!!.notifyItemRangeRemoved(0,selecetedItems.size)
+                            selecetedItems.clear()
+                        }
                     }
                 }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(),""+it.localizedMessage,Toast.LENGTH_SHORT).show()
-                }
+            }
         }
+
 
     }
 
@@ -103,25 +102,29 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
         binding.searchSuper.setOnItemClickListener { parent, view, position, id ->
             //-------------------------retrieve super object from super's string-------------------------//
             val mySuper = it.find { it.superName == parent.getItemAtPosition(position) }
+            whenSuperIsSelected_searchOrInseretItems(StoreId_To_BrandId(mySuper!!.storeId,mySuper.brand))
 
-            whenSuperIsSelected_searchOrInseretItems(mySuper)
         }
     }
 
-    private fun whenSuperIsSelected_searchOrInseretItems(mySuper: UserFavouriteSupers?) {
-        onUserChangeSuperCleanList(mySuper!!.storeId)
+    private fun whenSuperIsSelected_searchOrInseretItems(mySuper: StoreId_To_BrandId) {
+        onUserChangeSuperCleanList(mySuper.storeId)
         if(binding.searchSuper.text.isEmpty()){
-            binding.searchSuper.setText(mySuper!!.superName)
+//            binding.searchSuper.setText(mySuper!!.superName)
         }
         lifecycleScope.launch(Dispatchers.IO) {
             if (mainActivityViewModel.db.FullItemTableDao()
-                    .getShufersalTableById(mySuper!!.storeId,mySuper.brand).isEmpty()
+                    .getShufersalTableById(mySuper!!.storeId,mySuper.brandId).isEmpty()
             ) {
+                Log.d("dbChecker", "creating new table")
+                mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId))
+                //adding super to favorite table
+//                mainActivityViewModel.addSuperToFavorite(mySuper)
+                viewModel.addSuperToFavorite(StoreId_To_BrandId(mySuper.storeId,mySuper.brandId),mainActivityViewModel.db)
 
-                mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brand))
             } else {
                 Log.d("dbChecker", "this super db is filled already")
-                viewModel.getSuperTableById(mySuper.storeId,mySuper.brand, mainActivityViewModel.db)
+                viewModel.getSuperTableById(mySuper.storeId,mySuper.brandId, mainActivityViewModel.db)
                 checkLastSuperDbUpdate(
                     mySuper,
                     mainActivityViewModel,
@@ -140,8 +143,8 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
                 //-------------------------get items in super-------------------------//
                 lifecycleScope.launch(Dispatchers.IO) {
                     viewModel.getSuperTableById(
-                        mySuper!!.storeId,
-                        mySuper.brand,
+                        mySuper.storeId,
+                        mySuper.brandId,
                         mainActivityViewModel.db
                     )
                 }.invokeOnCompletion {
@@ -178,26 +181,28 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
     }
 
     private fun initUIPageWithItems() {
-        //move to viemodel til->
-        lifecycleScope.launch(Dispatchers.IO) {
-            val userFavouriteSuper=mainActivityViewModel.db.superTableOfIdAndName().getUserFavSuperById(storeidToBrandid!!.storeId,storeidToBrandid.brandId)
-            currentlySuper = storeidToBrandid.storeId
-            items!!.forEach {
-                val item: Item = mainActivityViewModel.db.FullItemTableDao()
-                    .getItemFromStoreAtBrand(
-                        userFavouriteSuper.storeId,
-                        userFavouriteSuper.brand,
-                        it.itemName
-                    )
-                selecetedItems.add(item)
-            }
-       //until.
-            lifecycleScope.launch(Dispatchers.Main) {
-
-                whenSuperIsSelected_searchOrInseretItems(userFavouriteSuper)
-                binding.rvSingleItem.adapter?.notifyDataSetChanged()
-            }
+        currentlySuper = storeidToBrandid!!.storeId
+        if(items!=null){
+            selecetedItems.addAll(items)
         }
+        var superName=""
+        lifecycleScope.launch(Dispatchers.IO) {
+            superName = viewModel.getSuperName(mainActivityViewModel.db,storeidToBrandid.storeId,storeidToBrandid.brandId)
+            superName = mainActivityViewModel.UIUserFavSuper(superName,storeidToBrandid.brandId)
+        }.invokeOnCompletion {
+            try{
+                binding.searchSuper.setText(superName)
+            }catch (e:NullPointerException){
+                println("super name not found")
+            }
+
+        }
+
+        println(selecetedItems)
+        binding.searchSuper.isEnabled=false
+        whenSuperIsSelected_searchOrInseretItems(storeidToBrandid)
+
+
     }
 
     //-------------------------delete previous list if user changed super-------------------------//

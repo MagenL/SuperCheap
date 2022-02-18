@@ -28,21 +28,14 @@ interface ShufersalDao {
 
 
     //--------------getting items that matches to user's brand conditions-------------------//
-    @Query("select * from $ITEMS_TABLE " +
-            "where (:shufersal is 0 or brandId=:shufersal) " +
-            "or (:victory is 0 or brandId=:victory) " +
-            "or (:hcohen is 0 or brandId=:hcohen)" +
-            "or (:mahsaniAshok is 0 or brandId=:mahsaniAshok)" +
-            "or (:bareket is 0 or brandId=:bareket)"+
-            "GROUP BY itemName HAVING COUNT(itemName)>:times order by itemPrice asc" )
-    suspend fun countItemNames(
-        times:Int?=1,
-        shufersal:Int?=0,
-        victory:Int?=0,
-        hcohen:Int?=0,
-        mahsaniAshok:Int?=0,
-        bareket:Int?=0
+    @Query("select * from $ITEMS_TABLE GROUP BY itemName HAVING COUNT(itemName)>:times order by itemPrice asc" )
+    fun countItemNames(
+        times:Int=1
     ):List<Item>
+
+    @Query("select * from $ITEMS_TABLE where (:shufersal is 1 and brandId=:shufersal) or (:victory is 2 and brandId=:victory) or  (:mahsaniAshok is 3 and brandId=:mahsaniAshok) or (:bareket is 4 and brandId=:bareket) or (:hcohen is 5 or brandId=:hcohen)")
+    fun getItemsByBrand(shufersal:Int?=0, victory:Int?=0, hcohen:Int?=0, mahsaniAshok:Int?=0, bareket:Int?=0):List<Item>
+
 
     @Query("select distinct storeId, brandId from $ITEMS_TABLE GROUP BY itemName HAVING COUNT(itemName)>1 " )
     suspend fun getSuperAndBrandForFoundItems():List<StoreId_To_BrandId>

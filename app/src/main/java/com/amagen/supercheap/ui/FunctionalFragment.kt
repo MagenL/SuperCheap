@@ -5,25 +5,27 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.*
 import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.databinding.ListSearchProductsFragmentBinding
 import com.amagen.supercheap.databinding.SingleSearchProductFragmentBinding
 import com.amagen.supercheap.extensions.hideCorners
 import com.amagen.supercheap.extensions.setDialogIfApplicationLoadingData
 import com.amagen.supercheap.extensions.useNotToOppsisteZeroAndOne
-import com.amagen.supercheap.models.BrandToId
-import com.amagen.supercheap.models.IdToSuperName
-import com.amagen.supercheap.models.Item
-import com.amagen.supercheap.models.UserFavouriteSupers
+import com.amagen.supercheap.models.*
 import kotlinx.android.synthetic.main.item_dialog.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 
-open class FunctionalFragment: Fragment() {
+open class FunctionalFragment(): Fragment() {
+    private var _mainActivityViewModel:MainActivityViewModel?=null
+    val mainActivityViewModel get() = _mainActivityViewModel!!
+
+    fun setMainActivityViewModel(mActivity:ViewModelStoreOwner){
+        _mainActivityViewModel = ViewModelProvider(mActivity)[MainActivityViewModel::class.java]
+    }
 
     fun dialogToItem(
         itemPosition: Int,
@@ -99,139 +101,60 @@ open class FunctionalFragment: Fragment() {
         fvsupers:List<UserFavouriteSupers>?=null
     ) {
         supers?.map {
-            UISuperName(dbSuperNames, it)
+            mainActivityViewModel.UISuperName(dbSuperNames, null, it)
         }
         fvsupers?.map{
-            UISuperName(dbSuperNames, it)
+            mainActivityViewModel.UISuperName(dbSuperNames, it, null)
         }
     }
 
-    fun UIUserFavSuper(userSuper:String,brand:Int):String{
-        when(brand){
-            BrandToId.SHUFERSAL.brandId->{
-                if (!userSuper.contains(BrandToId.SHUFERSAL.brandName.toString())) {
-                    return "${BrandToId.SHUFERSAL.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-                }
-            }
-            BrandToId.VICTORY.brandId->{
-                if (!userSuper.contains(BrandToId.VICTORY.brandName.toString())) {
-                    return "${BrandToId.VICTORY.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-                }
-            }
-            BrandToId.MahsaniAshok.brandId->{
-                if (!userSuper.contains(BrandToId.MahsaniAshok.brandName.toString())) {
-                    return "${BrandToId.MahsaniAshok.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-                }
-            }
-            BrandToId.SuperBareket.brandId->{
-                if (!userSuper.contains(BrandToId.SuperBareket.brandName.toString())) {
-                    return "${BrandToId.SuperBareket.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-                }
-            }
-            BrandToId.HCohen.brandId->{
-                if (!userSuper.contains(BrandToId.HCohen.brandName.toString())) {
-                    return "${BrandToId.HCohen.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-                }
-            }
-        }
-        return userSuper.filter { char-> !char.isDigit() }
-    }
-
-    private fun UISuperName(
-        dbSuperNames: ArrayList<String>,
-        it: IdToSuperName
-    ) {
-        val currentSuper = StringBuilder()
-        dbSuperNames.add(it.superName)
-        Log.d("dashboard", "old name: ${it.superName} ")
-        currentSuper.append(UIUserFavSuper(it.superName,it.brand))
-//        when(it.brand){
+//    fun UIUserFavSuper(userSuper:String,brand:Int):String{
+//        when(brand){
 //            BrandToId.SHUFERSAL.brandId->{
-//                if (!it.superName.contains(BrandToId.SHUFERSAL.brandName.toString())) {
-//                    currentSuper.append(BrandToId.SHUFERSAL.brandName.toString()).append(" ")
+//                if (!userSuper.contains(BrandToId.SHUFERSAL.brandName.toString())) {
+//                    return "${BrandToId.SHUFERSAL.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
 //                }
 //            }
 //            BrandToId.VICTORY.brandId->{
-//                if (!it.superName.contains(BrandToId.VICTORY.brandName.toString())) {
-//                    currentSuper.append(BrandToId.VICTORY.brandName.toString()).append(" ")
+//                if (!userSuper.contains(BrandToId.VICTORY.brandName.toString())) {
+//                    return "${BrandToId.VICTORY.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
 //                }
 //            }
 //            BrandToId.MahsaniAshok.brandId->{
-//                if (!it.superName.contains(BrandToId.MahsaniAshok.brandName.toString())) {
-//                    currentSuper.append(BrandToId.MahsaniAshok.brandName.toString()).append(" ")
+//                if (!userSuper.contains(BrandToId.MahsaniAshok.brandName.toString())) {
+//                    return "${BrandToId.MahsaniAshok.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
 //                }
 //            }
 //            BrandToId.SuperBareket.brandId->{
-//                if (!it.superName.contains(BrandToId.SuperBareket.brandName.toString())) {
-//                    currentSuper.append(BrandToId.SuperBareket.brandName.toString()).append(" ")
+//                if (!userSuper.contains(BrandToId.SuperBareket.brandName.toString())) {
+//                    return "${BrandToId.SuperBareket.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
 //                }
 //            }
 //            BrandToId.HCohen.brandId->{
-//                if (!it.superName.contains(BrandToId.HCohen.brandName.toString())) {
-//                    currentSuper.append(BrandToId.HCohen.brandName.toString()).append(" ")
+//                if (!userSuper.contains(BrandToId.HCohen.brandName.toString())) {
+//                    return "${BrandToId.HCohen.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
 //                }
 //            }
 //        }
-//        currentSuper.append(it.superName.filter { char -> !char.isDigit() })
-        it.superName = currentSuper.toString()
-        Log.d("dashboard", "new name: ${it.superName} ")
-    }
+//        return userSuper.filter { char-> !char.isDigit() }
+//    }
 
-    fun UISuperName(
-        dbSuperNames: ArrayList<String>,
-        it: UserFavouriteSupers
-    ) {
-        val currentSuper = StringBuilder()
-        dbSuperNames.add(it.superName)
-        Log.d("dashboard", "old name: ${it.superName} ")
-        currentSuper.append(UIUserFavSuper(it.superName,it.brand))
-
-        it.superName = currentSuper.toString()
-        Log.d("dashboard", "new name: ${it.superName} ")
-
-//        when(it.brand){
-//            BrandToId.SHUFERSAL.brandId->{
-//                if (!it.superName.contains(BrandToId.SHUFERSAL.brandName.toString())) {
-//                    currentSuper.append(BrandToId.SHUFERSAL.brandName.toString()).append(" ")
-//                }
-//            }
-//            BrandToId.VICTORY.brandId->{
-//                if (!it.superName.contains(BrandToId.VICTORY.brandName.toString())) {
-//                    currentSuper.append(BrandToId.VICTORY.brandName.toString()).append(" ")
-//                }
-//            }
-//            BrandToId.MahsaniAshok.brandId->{
-//                if (!it.superName.contains(BrandToId.MahsaniAshok.brandName.toString())) {
-//                    currentSuper.append(BrandToId.MahsaniAshok.brandName.toString()).append(" ")
-//                }
-//            }
-//            BrandToId.SuperBareket.brandId->{
-//                if (!it.superName.contains(BrandToId.SuperBareket.brandName.toString())) {
-//                    currentSuper.append(BrandToId.SuperBareket.brandName.toString()).append(" ")
-//                }
-//            }
-//            BrandToId.HCohen.brandId->{
-//                if (!it.superName.contains(BrandToId.HCohen.brandName.toString())) {
-//                    currentSuper.append(BrandToId.HCohen.brandName.toString()).append(" ")
-//                }
-//            }
-//        }
-//        currentSuper.append(it.superName.filter { char -> !char.isDigit() })
-
-
+//    private fun UISuperName(
+//        dbSuperNames: ArrayList<String>,
+//        it: IdToSuperName
+//    ) {
 //        val currentSuper = StringBuilder()
 //        dbSuperNames.add(it.superName)
 //        Log.d("dashboard", "old name: ${it.superName} ")
-//        if (!it.superName.contains("שופרסל")) {
-//            currentSuper.append("שופרסל").append(" ")
-//        }
-//        currentSuper.append(it.superName.filter { char -> !char.isDigit() })
-//        Log.d("dashboard", "new name: ${it.superName} ")
+//        currentSuper.append(mainActivityViewModel.UIUserFavSuper(it.superName,it.brand))
 //        it.superName = currentSuper.toString()
-    }
+//        Log.d("dashboard", "new name: ${it.superName} ")
+//    }
 
 
-    fun checkLastSuperDbUpdate(superDetails: UserFavouriteSupers?, mainActivityViewModel: MainActivityViewModel, btnUpdate:Button, direction:Int?) {
+
+
+    fun checkLastSuperDbUpdate(superDetails: StoreId_To_BrandId, mainActivityViewModel: MainActivityViewModel, btnUpdate:Button, direction:Int?) {
         val twentyFourHoursInMillis=86_400_000
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -239,7 +162,7 @@ open class FunctionalFragment: Fragment() {
             //-------------------------first time super has implemented to user-------------------------//
             if(mainActivityViewModel.db.superTableOfIdAndName().getLastUpdate().toInt() == 0){
 
-                mainActivityViewModel.db.superTableOfIdAndName().updateDateOfItemsDB(Calendar.getInstance().timeInMillis,superDetails!!.storeId,superDetails.brand)
+                mainActivityViewModel.db.superTableOfIdAndName().updateDateOfItemsDB(Calendar.getInstance().timeInMillis,superDetails!!.storeId,superDetails.brandId)
                 Log.d("dbDateTime", "db updated successfully")
             }else{
                 //-------------------------if super table is not update to the last 24h-------------------------//
@@ -257,7 +180,7 @@ open class FunctionalFragment: Fragment() {
                     btnUpdate.setOnClickListener {
                         lifecycleScope.launch(Dispatchers.IO) {
                             Log.d(TAG, ": starting the update!")
-                            mainActivityViewModel.db.FullItemTableDao().deleteSuperTable(superDetails!!.storeId,superDetails.brand)
+                            mainActivityViewModel.db.FullItemTableDao().deleteSuperTable(superDetails!!.storeId,superDetails.brandId)
 
                             lifecycleScope.launch(Dispatchers.Main){
                                 checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
@@ -265,10 +188,10 @@ open class FunctionalFragment: Fragment() {
 
                             mainActivityViewModel.createSuperItemsTable(
                                 superDetails.storeId,
-                                findBrand(superDetails.brand)
+                                findBrand(superDetails.brandId)
                             )
                             mainActivityViewModel.db.superTableOfIdAndName().updateDateOfItemsDB(
-                                Calendar.getInstance().timeInMillis,superDetails.storeId,superDetails.brand)
+                                Calendar.getInstance().timeInMillis,superDetails.storeId,superDetails.brandId)
                         }.invokeOnCompletion {
                             lifecycleScope.launch(Dispatchers.Main) {
                                 Log.d(TAG, ": update finished!")

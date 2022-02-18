@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.R
@@ -18,12 +20,11 @@ import com.amagen.supercheap.databinding.FragmentDashboardBinding
 import com.amagen.supercheap.extensions.hideCorners
 
 import com.amagen.supercheap.extensions.hideKeyBoard
-import com.amagen.supercheap.models.BrandToId
-import com.amagen.supercheap.models.Elements
-import com.amagen.supercheap.models.IdToSuperName
-import com.amagen.supercheap.models.UserFavouriteSupers
+import com.amagen.supercheap.models.*
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.ui.home.recycleview.UserElementsRecycleView
+import com.amagen.supercheap.ui.home.searchproducts.bysingle.SingleSearchProduct
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.item_dialog.*
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +39,6 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
     private val binding get() = _binding!!
     private lateinit var mAuth:FirebaseAuth
     private lateinit var superNameList:ArrayList<String>
-    private lateinit var mainActivityViewModel: MainActivityViewModel
 
     //
     val superElements =ArrayList<Elements>()
@@ -48,7 +48,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
         dashboardViewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         //create instance of mainactivity viewmodel?
-        mainActivityViewModel = ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
+        setMainActivityViewModel(requireActivity())
         mAuth= FirebaseAuth.getInstance()
         return binding.root
     }
@@ -79,7 +79,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
                 superElements.add(
                     Elements(
-                        UIUserFavSuper(it.superName,it.brand),
+                        mainActivityViewModel.UIUserFavSuper(it.superName,it.brand),
                         BrandToId.values().find { brandToId->
                             it.brand == brandToId.brandId
                         }!!,
@@ -178,7 +178,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
     @SuppressLint("SetTextI18n")
     override fun onElementRootClick(elements: Elements, adapterPosition: Int) {
-        dashboardViewModel.getLastUpdate(mainActivityViewModel.db,elements.id!!,elements.brand.brandId)
+        dashboardViewModel.getLastUpdate(mainActivityViewModel.db,elements.storeId!!,elements.brand.brandId)
         val dialog = Dialog(requireContext())
         dialog.setContentView(R.layout.item_dialog)
 //        dialog.window!!.setLayout(300,300)
@@ -195,8 +195,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
         lifecycleScope.launch(Dispatchers.IO) {
             checkLastSuperDbUpdate(
-                mainActivityViewModel.db.superTableOfIdAndName().getFavSuperDetail(
-                    elements.id,elements.brand.brandId),
+                StoreId_To_BrandId(elements.storeId,elements.brand.brandId),
                 mainActivityViewModel,
                 dialog.btn_update_dialog,
                 dialog.tv_manufacturer_country.layoutDirection
@@ -208,19 +207,31 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
         dialog.btn_remove.setOnClickListener {
             binding.rvUserSupers.adapter!!.notifyItemRemoved(adapterPosition)
-            if(elements.id!=null){
-                dashboardViewModel.deleteSuperTable(mainActivityViewModel.db,elements.id,elements.brand.brandId)
+            if(elements.storeId!=null){
+                dashboardViewModel.deleteSuperTable(mainActivityViewModel.db,elements.storeId,elements.brand.brandId)
                 superElements.remove(elements)
             }
             dialog.dismiss()
         }
+        dialog.btn_ok.text = resources.getString(R.string.move_to_super)
         dialog.btn_ok.setOnClickListener {
+            moveToSuperFragment(elements)
             dialog.dismiss()
         }
         dialog.show()
     }
 
     override fun onElementLongClick(elements: Elements, adapterPosition: Int) {
+        moveToSuperFragment(elements)
+    }
 
+    private fun moveToSuperFragment(elements: Elements) {
+        val singleSearchProduct = SingleSearchProduct(
+            null,
+            StoreId_To_BrandId(elements.storeId!!, elements.brand.brandId)
+        )
+        parentFragmentManager.beginTransaction().replace(
+            R.id.nav_host_fragment_activity_main_application, singleSearchProduct
+        ).addToBackStack(null).commit()
     }
 }

@@ -9,9 +9,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.FragmentManager
 
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.R
@@ -24,8 +24,6 @@ import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.recycleview.SingleProductRecycleView
 import com.amagen.supercheap.recycleview.SuperAtBrandWithTotalPriceRecycleView
 import com.amagen.supercheap.ui.home.searchproducts.bysingle.SingleSearchProduct
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.*
 
 class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItemClickListener ,
@@ -35,15 +33,13 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
 
 
     private lateinit var viewModel: ListSearchProductsViewModel
-    private lateinit var mainActivityViewModel:MainActivityViewModel
+
 
     private var _binding:ListSearchProductsFragmentBinding?=null
     val binding get() = _binding!!
 
-    private val sumOfSuperAndTotalPrice= ArrayList<StoreId_To_BrandId>()
     val items = ArrayList<Item>()
     var myParentFragmentManger: FragmentManager?= null
-
     var conditionSearch:Boolean = false
 
     override fun onCreateView(
@@ -52,7 +48,8 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
     ): View? {
         _binding = ListSearchProductsFragmentBinding.inflate(layoutInflater,container,false)
         viewModel = ViewModelProvider(this).get(ListSearchProductsViewModel::class.java)
-        mainActivityViewModel = ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
+
+        setMainActivityViewModel(requireActivity())
         myParentFragmentManger = parentFragmentManager
 
         return binding.root
@@ -70,97 +67,38 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
 
 
 
-
         binding.btnSearchAllSupers.setOnClickListener {
             it.isSelected=it.isSelected.not()
-            var num:Int=0
-            if(it.isSelected) {
-
-                lifecycleScope.launch(Dispatchers.IO) {
-                    viewModel.clear()
-                    println("num=$num")
-                    viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,
-                        condition =mainActivityViewModel.db.FullItemTableDao().getUserStoresCount()-1
-                    )
-                }.invokeOnCompletion {
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        observeItemsForAllSupers()
-                    }
-                }
-
+            if(it.isSelected){
+                viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,false,1)
                 observeItemsForAllSupers()
-                binding.btnSearchVictory.isEnabled=false
-                binding.btnSearchVictory.isClickable=false
-
-                binding.btnSearchMahsaniashok.isEnabled=false
-                binding.btnSearchMahsaniashok.isClickable=false
-
-                binding.btnSearchBareket.isEnabled=false
-                binding.btnSearchBareket.isClickable=false
-
-                binding.btnSearchHCohen.isEnabled=false
-                binding.btnSearchHCohen.isClickable=false
-
-                binding.btnSearchShufersal.isEnabled=false
-                binding.btnSearchShufersal.isClickable=false
-            } else{
-                viewModel.clear()
+            }else{
                 viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db)
                 observeItemsForAllSupers()
-                viewModel.clearTerms()
-                binding.btnSearchVictory.isEnabled=true
-                binding.btnSearchVictory.isClickable=true
-
-                binding.btnSearchMahsaniashok.isEnabled=true
-                binding.btnSearchMahsaniashok.isClickable=true
-
-                binding.btnSearchBareket.isEnabled=true
-                binding.btnSearchBareket.isClickable=true
-
-                binding.btnSearchHCohen.isEnabled=true
-                binding.btnSearchHCohen.isClickable=true
-
-                binding.btnSearchShufersal.isEnabled=true
-                binding.btnSearchShufersal.isClickable=true
             }
-            println(viewModel.showTerms())
         }
 
 
         binding.btnSearchShufersal.setOnClickListener {
-            it.isSelected=it.isSelected.not()
-            viewModel.shufersal=BrandToId.SHUFERSAL.brandId
-            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,1)
+            onBrandClicked(it)
         }
         binding.btnSearchVictory.setOnClickListener {
-            it.isSelected=it.isSelected.not()
-            viewModel.victory=BrandToId.VICTORY.brandId
-            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,1)
+            onBrandClicked(it)
         }
         binding.btnSearchHCohen.setOnClickListener {
-            it.isSelected=it.isSelected.not()
-            viewModel.hcohen=BrandToId.HCohen.brandId
-            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,1)
+            onBrandClicked(it)
         }
         binding.btnSearchBareket.setOnClickListener {
-            it.isSelected=it.isSelected.not()
-            viewModel.bareket=BrandToId.SuperBareket.brandId
-            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,1)
+            onBrandClicked(it)
         }
         binding.btnSearchMahsaniashok.setOnClickListener {
-            it.isSelected=it.isSelected.not()
-            viewModel.mahsaniAshok=BrandToId.MahsaniAshok.brandId
-            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,1)
+            onBrandClicked(it)
         }
 
 
-        binding.rvChosenItems.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
+        binding.rvChosenItems.layoutManager = LinearLayoutManager(requireContext())
 
         binding.rvChosenItems.adapter = SingleProductRecycleView(items,this)
-
-
-
-
 
 
 
@@ -183,10 +121,39 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
         }
     }
 
+    private fun onBrandClicked(it: View) {
+        it.isSelected=it.isSelected.not()
+        conditionSearch = binding.btnSearchBareket.isSelected||binding.btnSearchHCohen.isSelected||binding.btnSearchShufersal.isSelected||binding.btnSearchVictory.isSelected||binding.btnSearchMahsaniashok.isSelected
+        if(it.isSelected){
+            viewModel.setBrandIdForConditionSearch(it.contentDescription.toString())
+        }else{
+            viewModel.shufersal=0
+        }
+
+        if(conditionSearch){
+            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db,true)
+            observeItemsForAllSupers()
+        }else{
+            viewModel.getDuplicateItemsFromAllSupers(mainActivityViewModel.db)
+            observeItemsForAllSupers()
+        }
+
+        items.clear()
+        viewModel.clear()
+        binding.rvChosenItems.adapter?.notifyDataSetChanged()
+        binding.rvSupersResult.adapter?.notifyDataSetChanged()
+        binding.btnSearchForMatchesInAllUserSupers.performClick()
+
+    }
+
     private fun observeItemsForAllSupers() {
         viewModel.itemFromAllSupers.observe(viewLifecycleOwner) {
             Log.d("itemsFromAllSUPERS", "observed, empty?${it.isEmpty()}")
             getObserverForSelectedItems(it)
+            if(it.size<10){
+                Toast.makeText(requireContext(), "no common items between your supers", Toast.LENGTH_SHORT).show()
+                binding.btnSearchAllSupers.performClick()
+            }
         }
     }
 

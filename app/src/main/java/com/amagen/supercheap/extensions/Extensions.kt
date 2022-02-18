@@ -29,16 +29,15 @@ fun Context.setDialogIfApplicationLoadingData(loading: LiveData<Boolean>,dialog:
     dialog.setContentView(R.layout.loading_layout)
     dialog.findViewById<WebView>(R.id.wv_animation_presentation).loadUrl("file:///android_asset/index.html")
     dialog.hideCorners()
-    loading.observe(lifecycleOwner, Observer {
-        if(it){
+    loading.observe(lifecycleOwner) {
+        if (it) {
             dialog.show()
             Log.d("dbchecker", "show $it")
-        }else{
+        } else {
             Log.d("dbchecker", "dismiss $it")
             dialog.dismiss()
-
         }
-    })
+    }
 
 }
 fun Boolean.toInt() = if (this) 1 else 0

@@ -20,17 +20,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_history"
-        android:name="com.amagen.supercheap.ui.history.HistoryFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_history" />
-
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.amagen.supercheap.ui.dashboard.DashboardFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_history" />
-    <fragment
         android:id="@+id/listSearchProducts"
         android:name="com.amagen.supercheap.ui.home.searchproducts.bylist.ListSearchProducts"
 
@@ -46,4 +35,18 @@
         android:name="com.amagen.supercheap.ui.home.searchproducts.bysingle.SingleSearchProduct"
         android:label="single_search_product_fragment"
         tools:layout="@layout/single_search_product_fragment" />
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.amagen.supercheap.ui.dashboard.DashboardFragment"
+        android:label="fragment_dashboard"
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_dashboardFragment_to_singleSearchProduct"
+            app:destination="@id/singleSearchProduct" />
+    </fragment>
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.amagen.supercheap.ui.history.HistoryFragment"
+        android:label="fragment_history"
+        tools:layout="@layout/fragment_history" />
 </navigation>
