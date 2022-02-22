@@ -23,6 +23,7 @@ def get_id_through_super_name(name):
 
 
 def getSpecific(page, super_to_find):
+
     html_doc = requests.get(page).text
     soup = BeautifulSoup(html_doc, 'lxml')
 

@@ -6,18 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
-    <Button
-        android:id="@+id/btn_sign_out"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:text="signout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
-
-<!--    <Button-->
+    <!--    <Button-->
 <!--        android:id="@+id/btn_move_to_find_product_fragment"-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content"-->
@@ -62,8 +52,9 @@
     <ImageView
         android:id="@+id/btn_add_list_of_products"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="300dp"
         android:src="@drawable/magnifier"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_move_to_find_product_fragment"
@@ -73,14 +64,14 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="find the\ncheapest super"
-        android:textSize="18sp"
         android:layout_marginEnd="75dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="64dp"
+        android:text="@string/find_the_ncheapest_super"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/btn_add_list_of_products"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_move_to_find_product_fragment" />
+        app:layout_constraintTop_toTopOf="@+id/btn_add_list_of_products" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

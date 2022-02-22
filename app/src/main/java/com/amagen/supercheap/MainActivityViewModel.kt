@@ -1,25 +1,38 @@
 package com.amagen.supercheap
 
 import android.app.Application
+import android.app.Dialog
+import android.content.Context
+import android.content.res.Resources
+import android.net.ConnectivityManager
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.*
 import com.amagen.supercheap.database.ApplicationDB
+import com.amagen.supercheap.extensions.delayOnLifeCycle
 import com.amagen.supercheap.models.*
+import com.amagen.supercheap.network.NetworkStatusChecker
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.android.synthetic.main.no_internet_alert.*
+import kotlinx.coroutines.*
 import org.json.JSONArray
 import org.json.JSONObject
+import retrofit2.HttpException
+import java.lang.IllegalArgumentException
 import java.lang.NullPointerException
+import java.lang.NumberFormatException
 import java.util.*
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
+
     val db = ApplicationDB.create(application)
     val py: Python
+    val mApplication = application
 
     private var _downloadAndCreateSuperTableProcess :MutableLiveData<Boolean> = MutableLiveData(false)
     val downloadAndCreateSuperTableProcess:LiveData<Boolean> get() = _downloadAndCreateSuperTableProcess
@@ -44,70 +57,26 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     }
 
-    fun createTableWithSuperURL(url: String) {
-        viewModelScope.launch(Dispatchers.IO) {
 
+    fun createSuperItemsTable(superId: Int, brand: BrandToId,link:String){
 
-            val callbackObject: PyObject =
-                py.getModule("python_service_gz_to_json").callAttr("download", url)
-            val itemsJson =
-                JSONObject(callbackObject.toString()).getJSONObject("root").getJSONObject("Items")
-                    .getJSONArray("Item")
-            val storeJson =
-                JSONObject(callbackObject.toString()).getJSONObject("root").getString("StoreId")
-
-            for (i in 0 until itemsJson.length()) {
-                //itemsJson.put(JsonObject().addProperty("storeId",storeJson))
-                itemsJson.getJSONObject(i).put("storeId", storeJson)
-            }
-
-
-            db.FullItemTableDao().upsertTableItem(
-                Gson().fromJson(
-                    itemsJson.toString(),
-                    TypeToken.getParameterized(List::class.java, Item::class.java).type
-                )
-            )
-
-
-        }
-
-    }
-
-
-    fun getItemFromTable(item: String, id: Int){
-
-        viewModelScope.launch(Dispatchers.IO) {
-//            mList.postValue(db.shufersalFullTableDao().getAllAlikeNames(item))
-            itemOptionList.postValue(db.FullItemTableDao().getAllAlikeNamesFromSuper(item, id))
-        }
-
-    }
-
-
-    fun createSuperItemsTable(superId: Int, brand: BrandToId){
         if(_downloadAndCreateSuperTableProcess.value == false){
             viewModelScope.launch(Dispatchers.Main){
                 _downloadAndCreateSuperTableProcess.value=true
             }.invokeOnCompletion {
                 viewModelScope.launch(Dispatchers.IO) {
-                    val TAG = "singleSearchProductViewModel"
-                    Log.d(TAG, "db is empty")
-
-                    val link = getNewLink(superId,py,brand)
-                    Log.d(TAG, "link: "+link)
                     val callbackObject: PyObject = py
                         .getModule("python_service_gz_to_json")
-                        .callAttr("download",link)
+                        .callAttr("download", link)
 
-                    if(brand == BrandToId.SHUFERSAL){
+
+                    if (brand == BrandToId.SHUFERSAL) {
                         val itemsJson = JSONObject(callbackObject.toString())
                             .getJSONObject("root")
                             .getJSONObject("Items")
                             .getJSONArray("Item")
                         jsonToSQLTable(itemsJson, superId, brand.brandId)
-                    }
-                    else{
+                    } else {
                         val itemsJson = JSONObject(callbackObject.toString())
                             .getJSONObject("Prices")
                             .getJSONObject("Products")
@@ -124,6 +93,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
 
                 }.invokeOnCompletion {
+                    if(it!=null){
+                        println(it.localizedMessage)
+                    }
                     viewModelScope.launch(Dispatchers.Main) {
                         _downloadAndCreateSuperTableProcess.value = false
                         //check if table is in favorite
@@ -142,71 +114,99 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         for (i in 0 until itemsJson.length()) {
             itemsJson.getJSONObject(i).put("storeId", superId)
             itemsJson.getJSONObject(i).put("brandId", brandId)
+            if(itemsJson.getJSONObject(i).get("ItemCode").toString().toIntOrNull() ==null ){
+                itemsJson.getJSONObject(i).put("ItemCode",0)
+            }
+
         }
         db.FullItemTableDao().upsertTableItem(
             Gson().fromJson(
                 itemsJson.toString(),
                 TypeToken.getParameterized(List::class.java, Item::class.java).type
             )
+
         )
     }
 
-    private fun getNewLink(superId: Int, py: Python, brand: BrandToId):String {
-        Log.d("getNewLink:", " store id:"+superId)
-        try{
-            if(brand == BrandToId.SHUFERSAL){
-                return py.getModule("findSuperLinkByIdDirect")
-                    .callAttr("finder",brand.storeIdBaseURL,superId).toString()
+    fun getNewLink(superId: Int, brand: BrandToId):String {
 
-            }else{
-                return py.getModule("find_vic_super_by_id")
-                    .callAttr("getLinkByID",brand.priceBaseURL,superId).toString()
+
+        _downloadAndCreateSuperTableProcess.postValue(true)
+        if (brand == BrandToId.SHUFERSAL) {
+            val link = py.getModule("findSuperLinkByIdDirect")
+                .callAttr("finder", brand.storeIdBaseURL, superId)
+                .toString()
+            if (link.isNullOrEmpty()) {
+                throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+
             }
-        }catch (e:NullPointerException){
-            println("server probably in maintenance ${e.localizedMessage}")
-            return ""
-        }catch (e:Exception){
-            println("something wrong error: ${e.localizedMessage}")
-            return ""
+            _downloadAndCreateSuperTableProcess.postValue(false)
+            return link
+
+        } else {
+            val link = py.getModule("find_vic_super_by_id")
+                .callAttr("getLinkByID", brand.priceBaseURL, superId).toString()
+            if (link.isNullOrEmpty()) {
+                throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+            }
+            _downloadAndCreateSuperTableProcess.postValue(false)
+            return link
         }
-
-
     }
 
-    fun getAllShufersalSupers() {
-        viewModelScope.launch(Dispatchers.Main){
-            dashboardLoading.value=true
-        }
 
+    fun getAllSupers() {
+
+        viewModelScope.launch(Dispatchers.Main) {
+            dashboardLoading.value = true
+        }
         viewModelScope.launch(Dispatchers.IO) {
-            if(db.superTableOfIdAndName().getAllSupers().isEmpty()){
+            if (db.superTableOfIdAndName().getAllSupers().isEmpty()) {
                 //shufersal
                 val TAG = "MainActivityViewModel"
                 Log.d(TAG, "db is empty ")
-                val pyShufersalIdAndName = py.getModule("get_shufersal_name_and_id_json").callAttr("starter",BrandToId.SHUFERSAL.priceBaseURL)
+                val pyShufersalIdAndName = py.getModule("get_shufersal_name_and_id_json")
+                    .callAttr("starter", BrandToId.SHUFERSAL.priceBaseURL)
                 val jsonarray = JSONArray(pyShufersalIdAndName.toString())
-                for(i in 0 until jsonarray.length()){
-                    jsonarray.getJSONObject(i).put("brand",BrandToId.SHUFERSAL.brandId)
+                for (i in 0 until jsonarray.length()) {
+                    jsonarray.getJSONObject(i).put("brand", BrandToId.SHUFERSAL.brandId)
                 }
-                db.superTableOfIdAndName().upsertTable(Gson().fromJson(jsonarray.toString(),
-                    TypeToken.getParameterized(List::class.java, IdToSuperName::class.java).type))
+                db.superTableOfIdAndName().upsertTable(
+                    Gson().fromJson(
+                        jsonarray.toString(),
+                        TypeToken.getParameterized(
+                            List::class.java,
+                            IdToSuperName::class.java
+                        ).type
+                    )
+                )
 //               victory
-                val pyVictoryBrandsIdAndName = py.getModule("victory_scrapping").callAttr("starter",BrandToId.VICTORY.priceBaseURL)
+                val pyVictoryBrandsIdAndName = py.getModule("victory_scrapping")
+                    .callAttr("starter", BrandToId.VICTORY.priceBaseURL)
                 val jsonArrayOfVictoryItems = JSONArray(pyVictoryBrandsIdAndName.toString())
-                db.superTableOfIdAndName().upsertTable(Gson().fromJson(jsonArrayOfVictoryItems.toString(),TypeToken.getParameterized(List::class.java,IdToSuperName::class.java).type))
+                db.superTableOfIdAndName().upsertTable(
+                    Gson().fromJson(
+                        jsonArrayOfVictoryItems.toString(),
+                        TypeToken.getParameterized(
+                            List::class.java,
+                            IdToSuperName::class.java
+                        ).type
+                    )
+                )
 
             }
-
-            }.invokeOnCompletion {
-            viewModelScope.launch (Dispatchers.IO){
+        }.invokeOnCompletion {
+            viewModelScope.launch(Dispatchers.IO) {
                 superNameAndId.postValue(db.superTableOfIdAndName().getAllSupers())
             }
             viewModelScope.launch(Dispatchers.Main) {
-                dashboardLoading.value=false
+                dashboardLoading.value = false
             }
 
-
         }
+
+
+
     }
 
 
@@ -262,10 +262,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
 
     }
-
-
-
-
 
 
 

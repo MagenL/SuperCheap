@@ -3,18 +3,19 @@ package com.amagen.supercheap.extensions
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.net.ConnectivityManager
 import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import android.widget.Button
+import androidx.lifecycle.*
+import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.R
-import com.amagen.supercheap.models.Elements
-import java.util.regex.Matcher
-import java.util.regex.Pattern
+import com.amagen.supercheap.network.NetworkStatusChecker
+import kotlinx.android.synthetic.main.no_internet_alert.*
+import kotlinx.coroutines.*
 
 
 fun CharSequence?.isEmailValid()=!isNullOrEmpty()&&Patterns.EMAIL_ADDRESS.matcher(this).matches()
@@ -29,6 +30,7 @@ fun Context.setDialogIfApplicationLoadingData(loading: LiveData<Boolean>,dialog:
     dialog.setContentView(R.layout.loading_layout)
     dialog.findViewById<WebView>(R.id.wv_animation_presentation).loadUrl("file:///android_asset/index.html")
     dialog.hideCorners()
+
     loading.observe(lifecycleOwner) {
         if (it) {
             dialog.show()
@@ -56,3 +58,64 @@ fun Dialog.hideCorners(){
     this.window?.setBackgroundDrawableResource(android.R.color.transparent)
 }
 
+
+
+fun View.delayOnLifeCycle(
+    durationInMillis:Long,
+    dispatcher:CoroutineDispatcher = Dispatchers.Main,
+    view:View
+): Job?=findViewTreeLifecycleOwner()?.let { lifecycleOwner ->
+    lifecycleOwner.lifecycle.coroutineScope.launch(dispatcher) {
+        view.isEnabled =false
+        delay(durationInMillis)
+        view.isEnabled=true
+    }
+
+}
+//?=null,
+//
+//
+fun View.delayOnLifeCycle(
+    durationInMillis:Long,
+    dispatcher:CoroutineDispatcher = Dispatchers.Main,
+    block:()->Unit
+): Job?=findViewTreeLifecycleOwner()?.let { lifecycleOwner ->
+    lifecycleOwner.lifecycle.coroutineScope.launch(dispatcher) {
+        delay(durationInMillis)
+    }
+}
+fun Activity.checkConnectivityStatus(
+    mainActivityViewModel:MainActivityViewModel,
+    flag:Boolean=false,
+    lifecycleScope: LifecycleCoroutineScope,
+    activity: Activity=this
+):Boolean{
+    val connectivityManager = getSystemService(ConnectivityManager::class.java)
+    if(NetworkStatusChecker(connectivityManager).hasInternetConnection()){
+        mainActivityViewModel.getAllSupers()
+        return true
+    }else{
+        if(!flag){
+            noInternetDialog()
+        }
+        lifecycleScope.launch {
+            delay(5000)
+            lifecycleScope.launch(Dispatchers.IO) {
+                if(mainActivityViewModel.db.superTableOfIdAndName().getAllSupers().isEmpty()){
+                    activity.checkConnectivityStatus(mainActivityViewModel,flag = true, lifecycleScope=lifecycleScope, activity = activity)
+                }
+            }
+        }
+    }
+    return false
+}
+
+fun Activity.noInternetDialog() {
+    val dialog = Dialog(this)
+    dialog.hideCorners()
+    dialog.setContentView(R.layout.no_internet_alert)
+    dialog.btn_ok_dialog.setOnClickListener {
+        dialog.dismiss()
+    }
+    dialog.show()
+}

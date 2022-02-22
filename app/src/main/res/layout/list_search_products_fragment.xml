@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.searchproducts.bylist.ListSearchProducts">
+    tools:context=".ui.home.searchproducts.findTheCheapestSuper.FindTheChpeastSuperFragment">
 
 
     <AutoCompleteTextView
@@ -121,7 +121,6 @@
                 android:background="@drawable/btn_shape"
                 android:backgroundTint="@color/btn_background_when_selected"
                 android:layout_margin="5dp"
-                style="?android:attr/buttonBarButtonStyle"
                 android:visibility="gone"
                 tools:visibility="visible"
                 android:contentDescription="סופר ברקת"

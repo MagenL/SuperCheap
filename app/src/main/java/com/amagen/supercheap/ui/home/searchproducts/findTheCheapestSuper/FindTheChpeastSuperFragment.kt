@@ -1,4 +1,4 @@
-package com.amagen.supercheap.ui.home.searchproducts.bylist
+package com.amagen.supercheap.ui.home.searchproducts.findTheCheapestSuper
 
 
 import androidx.lifecycle.ViewModelProvider
@@ -11,11 +11,12 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.R
 import com.amagen.supercheap.databinding.ListSearchProductsFragmentBinding
+import com.amagen.supercheap.extensions.delayOnLifeCycle
 import com.amagen.supercheap.models.BrandAndStore_toPrice
 import com.amagen.supercheap.models.BrandToId
 import com.amagen.supercheap.models.Item
@@ -23,23 +24,24 @@ import com.amagen.supercheap.models.StoreId_To_BrandId
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.recycleview.SingleProductRecycleView
 import com.amagen.supercheap.recycleview.SuperAtBrandWithTotalPriceRecycleView
-import com.amagen.supercheap.ui.home.searchproducts.bysingle.SingleSearchProduct
+import com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch.SuperSearchFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
-class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItemClickListener ,
+class FindTheChpeastSuperFragment : FunctionalFragment(), SingleProductRecycleView.OnItemClickListener ,
     SuperAtBrandWithTotalPriceRecycleView.OnSuperClickListener{
 
 
 
 
-    private lateinit var viewModel: ListSearchProductsViewModel
+    private lateinit var viewModel: FindTheCheapestSuperViewModel
 
 
     private var _binding:ListSearchProductsFragmentBinding?=null
     val binding get() = _binding!!
 
     val items = ArrayList<Item>()
-    var myParentFragmentManger: FragmentManager?= null
     var conditionSearch:Boolean = false
 
     override fun onCreateView(
@@ -47,10 +49,10 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
         savedInstanceState: Bundle?
     ): View? {
         _binding = ListSearchProductsFragmentBinding.inflate(layoutInflater,container,false)
-        viewModel = ViewModelProvider(this).get(ListSearchProductsViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(FindTheCheapestSuperViewModel::class.java)
 
         setMainActivityViewModel(requireActivity())
-        myParentFragmentManger = parentFragmentManager
+
 
         return binding.root
     }
@@ -97,27 +99,33 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
 
 
         binding.rvChosenItems.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvSupersResult.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
 
         binding.rvChosenItems.adapter = SingleProductRecycleView(items,this)
-
-
+        binding.rvSupersResult.adapter = SuperAtBrandWithTotalPriceRecycleView(viewModel.brandAndStoreStore_ToPrice,this,items)
 
 
 
         binding.btnSearchForMatchesInAllUserSupers.setOnClickListener {
-            if(binding.rvSupersResult.adapter != null){
-                viewModel.clear()
-                binding.rvSupersResult.adapter!!.notifyDataSetChanged()
-            }
-            if(items.isNotEmpty()){
-                conditionSearch = binding.btnSearchBareket.isSelected||binding.btnSearchHCohen.isSelected||binding.btnSearchShufersal.isSelected||binding.btnSearchVictory.isSelected||binding.btnSearchMahsaniashok.isSelected
-                viewModel.getAvailableSupersFromItemList(items,mainActivityViewModel.db,conditionSearch)
-            }
-            viewModel.superAtBrand.observe(viewLifecycleOwner){
-                binding.rvSupersResult.adapter = SuperAtBrandWithTotalPriceRecycleView(viewModel.brandAndStoreStore_ToPrice,ListSearchProducts(),myParentFragmentManger,items)
-                binding.rvSupersResult.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
-            }
+            binding.btnSearchForMatchesInAllUserSupers.delayOnLifeCycle(1000, view= binding.btnSearchForMatchesInAllUserSupers)
+            onSearchSupersClick()
+        }
+    }
 
+    private fun onSearchSupersClick() {
+        viewModel.clear()
+        binding.rvSupersResult.adapter!!.notifyDataSetChanged()
+        if (items.isNotEmpty()) {
+            conditionSearch =
+                binding.btnSearchBareket.isSelected || binding.btnSearchHCohen.isSelected || binding.btnSearchShufersal.isSelected || binding.btnSearchVictory.isSelected || binding.btnSearchMahsaniashok.isSelected
+            viewModel.getAvailableSupersFromItemList(
+                items,
+                mainActivityViewModel.db,
+                conditionSearch
+            )
+        }
+        viewModel.superAtBrand.observe(viewLifecycleOwner) {
+            binding.rvSupersResult.adapter!!.notifyDataSetChanged()
         }
     }
 
@@ -127,7 +135,7 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
         if(it.isSelected){
             viewModel.setBrandIdForConditionSearch(it.contentDescription.toString())
         }else{
-            viewModel.shufersal=0
+            viewModel.removeBrandIdForConditionSearch(it.contentDescription.toString())
         }
 
         if(conditionSearch){
@@ -148,8 +156,10 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
 
     private fun observeItemsForAllSupers() {
         viewModel.itemFromAllSupers.observe(viewLifecycleOwner) {
-            Log.d("itemsFromAllSUPERS", "observed, empty?${it.isEmpty()}")
             getObserverForSelectedItems(it)
+            if(it.isEmpty()){
+                return@observe
+            }
             if(it.size<10){
                 Toast.makeText(requireContext(), "no common items between your supers", Toast.LENGTH_SHORT).show()
                 binding.btnSearchAllSupers.performClick()
@@ -215,19 +225,31 @@ class ListSearchProducts : FunctionalFragment(), SingleProductRecycleView.OnItem
 
     override fun onSuperRootClick(
         superWithPrice: BrandAndStore_toPrice,
-        myParentFragmentManger: FragmentManager?,
         items: List<Item>
     ) {
+        val itemsFromSuper = ArrayList<Item>()
+        lifecycleScope.launch(Dispatchers.IO) {
+            items.forEach {
+                val item: Item = mainActivityViewModel.db.FullItemTableDao()
+                    .getItemFromStoreAtBrand(
+                        superWithPrice.storeId_To_BrandId.storeId,
+                        superWithPrice.storeId_To_BrandId.brandId,
+                        it.itemName
+                    )
+                itemsFromSuper.add(item)
+            }
+        }.invokeOnCompletion {
+            val fragment = SuperSearchFragment(
+                itemsFromSuper,
+                StoreId_To_BrandId(superWithPrice.storeId_To_BrandId.storeId,superWithPrice.storeId_To_BrandId.brandId)
+            )
+            parentFragmentManager.beginTransaction().replace(
+                R.id.nav_host_fragment_activity_main_application, fragment
+            ).addToBackStack(null).commit()
 
-        val fragment = SingleSearchProduct(
-            items,
-            StoreId_To_BrandId(superWithPrice.storeId_To_BrandId.storeId,superWithPrice.storeId_To_BrandId.brandId)
-        )
+            viewModel.clear()
+        }
 
-
-        myParentFragmentManger!!.beginTransaction().replace(
-            R.id.nav_host_fragment_activity_main_application, fragment
-        ).addToBackStack(null).commit()
 
     }
 }

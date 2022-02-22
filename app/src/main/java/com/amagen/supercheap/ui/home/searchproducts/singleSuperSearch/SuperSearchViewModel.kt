@@ -1,4 +1,4 @@
-package com.amagen.supercheap.ui.home.searchproducts.bysingle
+package com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch
 
 import android.app.Application
 import androidx.lifecycle.*
@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class SingleSearchProductViewModel(application:Application) : AndroidViewModel(application) {
+class SuperSearchViewModel(application:Application) : AndroidViewModel(application) {
 
     private var linkToSuper = MutableLiveData<List<UserFavouriteSupers>>()
     val supersLink:LiveData<List<UserFavouriteSupers>>  get() =  linkToSuper
@@ -42,7 +42,7 @@ class SingleSearchProductViewModel(application:Application) : AndroidViewModel(a
     }
     fun getSuperTableById(superId:Int, superBrand:Int, db: ApplicationDB){
         loadingSingleSearchMLD.postValue(true)
-        itemName.postValue(db.FullItemTableDao().getShufersalTableById(superId, superBrand ))
+        itemName.postValue(db.FullItemTableDao().getSuperTableById(superId, superBrand ))
         loadingSingleSearchMLD.postValue(false)
     }
 

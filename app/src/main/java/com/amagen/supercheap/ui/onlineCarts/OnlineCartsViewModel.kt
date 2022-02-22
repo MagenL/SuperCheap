@@ -1,20 +1,13 @@
-package com.amagen.supercheap.ui.history
+package com.amagen.supercheap.ui.onlineCarts
 
-import android.util.JsonReader
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.amagen.supercheap.models.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.StringReader
 
-class HistoryViewModel : ViewModel(){
+class OnlineCartsViewModel : ViewModel(){
     private val TAG = "HistoryViewModel"
     private val mAuth = FirebaseAuth.getInstance()
     private val cartHistoryReference= FirebaseDatabase.getInstance()

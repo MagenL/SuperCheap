@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/listSearchProducts"
-        android:name="com.amagen.supercheap.ui.home.searchproducts.bylist.ListSearchProducts"
+        android:name="com.amagen.supercheap.ui.home.searchproducts.findTheCheapestSuper.FindTheChpeastSuperFragment"
 
         android:label="list_search_products_fragment"
         tools:layout="@layout/list_search_products_fragment" >
@@ -32,7 +32,7 @@
     </fragment>
     <fragment
         android:id="@+id/singleSearchProduct"
-        android:name="com.amagen.supercheap.ui.home.searchproducts.bysingle.SingleSearchProduct"
+        android:name="com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch.SuperSearchFragment"
         android:label="single_search_product_fragment"
         tools:layout="@layout/single_search_product_fragment" />
     <fragment
@@ -46,7 +46,7 @@
     </fragment>
     <fragment
         android:id="@+id/historyFragment"
-        android:name="com.amagen.supercheap.ui.history.HistoryFragment"
+        android:name="com.amagen.supercheap.ui.onlineCarts.OnlineCartsFragment"
         android:label="fragment_history"
         tools:layout="@layout/fragment_history" />
 </navigation>

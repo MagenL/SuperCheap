@@ -6,18 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.dashboard.DashboardFragment">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/iv_user_image"
-        android:layout_width="83dp"
-        android:layout_height="83dp"
-        android:layout_marginStart="16dp"
-        android:src="@drawable/default_user_pic"
-        app:layout_constraintBottom_toTopOf="@+id/dash_gl_20"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-
 
     <AutoCompleteTextView
         android:id="@+id/tv_super_finder"
@@ -26,14 +14,15 @@
         android:hint="@string/add_super_to_your_favourite_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/dash_gl_20" />
+        app:layout_constraintTop_toTopOf="@+id/dash_gl_10" />
 
     <Button
         android:id="@+id/btn_add_super"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="add"
+        android:text="@string/add_super_to_your_favourite_list"
+        android:textAllCaps="false"
         android:background="@drawable/btn_shape"
         android:backgroundTint="@color/light_blue"
         app:layout_constraintEnd_toEndOf="@+id/tv_super_finder"
@@ -41,49 +30,52 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_super_finder" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/dash_gl_20"
+        android:id="@+id/dash_gl_10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.20
+        app:layout_constraintGuide_percent="0.10
 " />
 
     <TextView
         android:id="@+id/tv_user_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/arbutus_slab"
+        android:textSize="20sp"
         android:text="@string/user_name"
         android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_user_image"
+        app:layout_constraintBottom_toTopOf="@+id/tv_super_finder"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/iv_user_image"
-        app:layout_constraintTop_toTopOf="@+id/iv_user_image" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_user_supers"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_sign_out"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_add_super"
-        tools:layout_height="125dp" />
+         />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_friends"
-        android:layout_width="0dp"
+    <Button
+        android:id="@+id/btn_sign_out"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rv_user_supers"
-        tools:layout_height="125dp" />
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/btn_shape"
+        android:backgroundTint="@color/red_cancel"
+        android:text="@string/sign_out"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/btn_add_super"
+        app:layout_constraintStart_toStartOf="@+id/btn_add_super" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

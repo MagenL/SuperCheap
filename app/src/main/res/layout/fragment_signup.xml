@@ -14,6 +14,7 @@
         android:layout_height="50dp"
         android:layout_marginTop="16dp"
         android:translationZ="10dp"
+
         android:src="@drawable/ic_baseline_assignment_ind_24"
         app:layout_constraintEnd_toEndOf="@+id/signup_cardview"
         app:layout_constraintStart_toStartOf="@+id/signup_cardview"
@@ -89,9 +90,9 @@
             <Button
                 android:id="@+id/sign_up_button_With_Email"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:layout_marginTop="24dp"
-                android:background="@color/gentle_blue"
+                android:backgroundTint="@color/gentle_blue"
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:text="@string/send_email_verification"

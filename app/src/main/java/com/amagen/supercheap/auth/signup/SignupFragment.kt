@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.amagen.supercheap.MainActivityApplication
 import com.amagen.supercheap.R
+import com.amagen.supercheap.auth.login.LoginFragment
 import com.amagen.supercheap.databinding.FragmentSignupBinding
 import com.amagen.supercheap.extensions.isEmailValid
 import com.google.firebase.auth.FirebaseAuth
@@ -33,6 +34,10 @@ class SignupFragment : Fragment() {
         binding.signUpButtonWithEmail.setOnClickListener {
             binding.pbSignup.visibility= View.VISIBLE
             localSignupWithEmail()
+        }
+
+        binding.goToSignUp.setOnClickListener {
+            parentFragmentManager.beginTransaction().replace(R.id.auth_container, LoginFragment()).addToBackStack(null).commit()
         }
 
     }

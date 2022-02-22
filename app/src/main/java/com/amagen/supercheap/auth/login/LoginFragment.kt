@@ -54,6 +54,7 @@ class LoginFragment : Fragment() {
             signInWithEmailAndPassword()
         }
 
+
         binding.goToSignUp.setOnClickListener {
             parentFragmentManager.beginTransaction().replace(R.id.auth_container, SignupFragment()).addToBackStack(null).commit()
         }
@@ -84,14 +85,14 @@ class LoginFragment : Fragment() {
                         }
                     }
                     .addOnFailureListener {
-                        Toast.makeText(activity,"failed to login "+it.localizedMessage,Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(),"failed to login "+it.localizedMessage,Toast.LENGTH_SHORT).show()
                     }
             }else{
-                Toast.makeText(activity,"password must contains 6 characters",Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),"password must contains 6 characters",Toast.LENGTH_SHORT).show()
             }
 
         }else{
-            Toast.makeText(activity,"invalid email please try again",Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(),"invalid email please try again",Toast.LENGTH_SHORT).show()
         }
 
         binding.pbEmailSignIn.visibility=View.GONE
@@ -113,18 +114,17 @@ class LoginFragment : Fragment() {
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
-                println("onactivityresult method")
 
                 val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
                 if (task.isSuccessful) {
                     try {
                         // Google Sign In was successful, authenticate with Firebase
                         val account = task.getResult(ApiException::class.java)!!
-                        println("success")
+
                         firebaseAuthWithGoogle(account.idToken!!)
                     } catch (e: ApiException) {
                         // Google Sign In failed, update UI appropriately
-                        println("failure")
+
                     }
 
                 } else {

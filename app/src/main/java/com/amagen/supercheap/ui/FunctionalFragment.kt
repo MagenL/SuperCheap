@@ -4,9 +4,12 @@ import android.app.Dialog
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.RecyclerView
 import com.amagen.supercheap.MainActivityViewModel
+import com.amagen.supercheap.R
 import com.amagen.supercheap.databinding.ListSearchProductsFragmentBinding
 import com.amagen.supercheap.databinding.SingleSearchProductFragmentBinding
 import com.amagen.supercheap.extensions.hideCorners
@@ -16,6 +19,9 @@ import com.amagen.supercheap.models.*
 import kotlinx.android.synthetic.main.item_dialog.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.lang.IllegalArgumentException
+import java.net.ConnectException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -77,14 +83,12 @@ open class FunctionalFragment(): Fragment() {
 
 
     fun checkIfFragmentLoadingData(loading: LiveData<Boolean>,dialog:Dialog=Dialog(requireContext())){
-
         requireContext().
         setDialogIfApplicationLoadingData(
             loading,
             dialog,
             viewLifecycleOwner
         )
-
 
     }
     fun findBrand(id: Int): BrandToId {
@@ -108,48 +112,6 @@ open class FunctionalFragment(): Fragment() {
         }
     }
 
-//    fun UIUserFavSuper(userSuper:String,brand:Int):String{
-//        when(brand){
-//            BrandToId.SHUFERSAL.brandId->{
-//                if (!userSuper.contains(BrandToId.SHUFERSAL.brandName.toString())) {
-//                    return "${BrandToId.SHUFERSAL.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-//                }
-//            }
-//            BrandToId.VICTORY.brandId->{
-//                if (!userSuper.contains(BrandToId.VICTORY.brandName.toString())) {
-//                    return "${BrandToId.VICTORY.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-//                }
-//            }
-//            BrandToId.MahsaniAshok.brandId->{
-//                if (!userSuper.contains(BrandToId.MahsaniAshok.brandName.toString())) {
-//                    return "${BrandToId.MahsaniAshok.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-//                }
-//            }
-//            BrandToId.SuperBareket.brandId->{
-//                if (!userSuper.contains(BrandToId.SuperBareket.brandName.toString())) {
-//                    return "${BrandToId.SuperBareket.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-//                }
-//            }
-//            BrandToId.HCohen.brandId->{
-//                if (!userSuper.contains(BrandToId.HCohen.brandName.toString())) {
-//                    return "${BrandToId.HCohen.brandName.toString()} ${userSuper.filter { char -> !char.isDigit() }}"
-//                }
-//            }
-//        }
-//        return userSuper.filter { char-> !char.isDigit() }
-//    }
-
-//    private fun UISuperName(
-//        dbSuperNames: ArrayList<String>,
-//        it: IdToSuperName
-//    ) {
-//        val currentSuper = StringBuilder()
-//        dbSuperNames.add(it.superName)
-//        Log.d("dashboard", "old name: ${it.superName} ")
-//        currentSuper.append(mainActivityViewModel.UIUserFavSuper(it.superName,it.brand))
-//        it.superName = currentSuper.toString()
-//        Log.d("dashboard", "new name: ${it.superName} ")
-//    }
 
 
 
@@ -179,19 +141,24 @@ open class FunctionalFragment(): Fragment() {
                     }
                     btnUpdate.setOnClickListener {
                         lifecycleScope.launch(Dispatchers.IO) {
-                            Log.d(TAG, ": starting the update!")
-                            mainActivityViewModel.db.FullItemTableDao().deleteSuperTable(superDetails!!.storeId,superDetails.brandId)
+                            getSuperLink(superDetails.storeId,findBrand(superDetails.brandId)) {link->
 
-                            lifecycleScope.launch(Dispatchers.Main){
-                                checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                                Log.d(TAG, ": starting the update!")
+                                mainActivityViewModel.db.FullItemTableDao()
+                                    .deleteSuperTable(superDetails.storeId, superDetails.brandId)
+
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                                }
+                                mainActivityViewModel.createSuperItemsTable(
+                                    superDetails.storeId,
+                                    findBrand(superDetails.brandId),
+                                    link!!
+                                )
+                                mainActivityViewModel.db.superTableOfIdAndName().updateDateOfItemsDB(
+                                    Calendar.getInstance().timeInMillis,superDetails.storeId,superDetails.brandId)
                             }
 
-                            mainActivityViewModel.createSuperItemsTable(
-                                superDetails.storeId,
-                                findBrand(superDetails.brandId)
-                            )
-                            mainActivityViewModel.db.superTableOfIdAndName().updateDateOfItemsDB(
-                                Calendar.getInstance().timeInMillis,superDetails.storeId,superDetails.brandId)
                         }.invokeOnCompletion {
                             lifecycleScope.launch(Dispatchers.Main) {
                                 Log.d(TAG, ": update finished!")
@@ -209,5 +176,26 @@ open class FunctionalFragment(): Fragment() {
         }
 
     }
+
+    fun getSuperLink(storeId:Int,brandToId:BrandToId, blockToRunIfLinkIsValid:(link:String?)->Unit){
+        var alink:String? =null
+        lifecycleScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch(Dispatchers.Main) {
+                checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+            }
+            val link = mainActivityViewModel.getNewLink(storeId,brandToId)
+            alink = link
+        }.invokeOnCompletion {
+            if(it != null){
+                Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
+            }else{
+                lifecycleScope.launch(Dispatchers.IO) {
+                    blockToRunIfLinkIsValid(alink)
+                }
+
+            }
+        }
+    }
+
 
 }

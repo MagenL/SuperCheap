@@ -1,4 +1,4 @@
-package com.amagen.supercheap.ui.home.searchproducts.bysingle
+package com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch
 
 import android.R
 import androidx.lifecycle.ViewModelProvider
@@ -11,7 +11,6 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.databinding.SingleSearchProductFragmentBinding
 
 import com.amagen.supercheap.models.Item
@@ -25,18 +24,18 @@ import kotlinx.coroutines.launch
 import java.lang.NullPointerException
 import kotlin.collections.ArrayList
 
-class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: StoreId_To_BrandId?=null) : FunctionalFragment(), SingleProductRecycleView.OnItemClickListener{
+class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: StoreId_To_BrandId?=null) : FunctionalFragment(), SingleProductRecycleView.OnItemClickListener{
 
     private var _binding :SingleSearchProductFragmentBinding?=null
     val binding get() = _binding!!
-    private lateinit var viewModel: SingleSearchProductViewModel
+    private lateinit var viewModel: SuperSearchViewModel
 
     private val selecetedItems =ArrayList<Item>()
 
     private var currentlySuper:Int=-1
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        viewModel = ViewModelProvider(this)[SingleSearchProductViewModel::class.java]
+        viewModel = ViewModelProvider(this)[SuperSearchViewModel::class.java]
         _binding = SingleSearchProductFragmentBinding.inflate(layoutInflater)
         setMainActivityViewModel(requireActivity())
         return binding.root
@@ -109,18 +108,20 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
 
     private fun whenSuperIsSelected_searchOrInseretItems(mySuper: StoreId_To_BrandId) {
         onUserChangeSuperCleanList(mySuper.storeId)
-        if(binding.searchSuper.text.isEmpty()){
-//            binding.searchSuper.setText(mySuper!!.superName)
-        }
         lifecycleScope.launch(Dispatchers.IO) {
             if (mainActivityViewModel.db.FullItemTableDao()
-                    .getShufersalTableById(mySuper!!.storeId,mySuper.brandId).isEmpty()
+                    .getSuperTableById(mySuper.storeId,mySuper.brandId).isEmpty()
             ) {
                 Log.d("dbChecker", "creating new table")
-                mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId))
-                //adding super to favorite table
-//                mainActivityViewModel.addSuperToFavorite(mySuper)
-                viewModel.addSuperToFavorite(StoreId_To_BrandId(mySuper.storeId,mySuper.brandId),mainActivityViewModel.db)
+
+                getSuperLink(mySuper.storeId,findBrand(mySuper.brandId)){link->
+                    mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId),link!!)
+                    viewModel.addSuperToFavorite(
+                        StoreId_To_BrandId(mySuper.storeId, mySuper.brandId),
+                        mainActivityViewModel.db
+                    )
+                }
+
 
             } else {
                 Log.d("dbChecker", "this super db is filled already")
@@ -195,14 +196,9 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
             }catch (e:NullPointerException){
                 println("super name not found")
             }
-
         }
-
-        println(selecetedItems)
         binding.searchSuper.isEnabled=false
         whenSuperIsSelected_searchOrInseretItems(storeidToBrandid)
-
-
     }
 
     //-------------------------delete previous list if user changed super-------------------------//
@@ -220,6 +216,7 @@ class SingleSearchProduct(val items:List<Item>?=null,val storeidToBrandid: Store
 
 
     override fun onItemRootClick(item: Item, itemPosition: Int) {
+
         dialogToItem(itemPosition, item,binding,null,selecetedItems)
 
     }

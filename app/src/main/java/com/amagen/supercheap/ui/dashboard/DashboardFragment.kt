@@ -2,33 +2,33 @@ package com.amagen.supercheap.ui.dashboard
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.amagen.supercheap.MainActivityViewModel
+import androidx.recyclerview.widget.GridLayoutManager
 import com.amagen.supercheap.R
+import com.amagen.supercheap.auth.AuthActivity
 import com.amagen.supercheap.databinding.FragmentDashboardBinding
+import com.amagen.supercheap.extensions.checkConnectivityStatus
 import com.amagen.supercheap.extensions.hideCorners
 
 import com.amagen.supercheap.extensions.hideKeyBoard
+import com.amagen.supercheap.extensions.noInternetDialog
 import com.amagen.supercheap.models.*
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.ui.home.recycleview.UserElementsRecycleView
-import com.amagen.supercheap.ui.home.searchproducts.bysingle.SingleSearchProduct
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch.SuperSearchFragment
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.item_dialog.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -38,16 +38,13 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
     private lateinit var mAuth:FirebaseAuth
-    private lateinit var superNameList:ArrayList<String>
-
-    //
     val superElements =ArrayList<Elements>()
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         dashboardViewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
-        //create instance of mainactivity viewmodel?
+        //creating an instance of main activity view model
         setMainActivityViewModel(requireActivity())
         mAuth= FirebaseAuth.getInstance()
         return binding.root
@@ -58,8 +55,8 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
 
         //--------------------if application is loading- display loading dialog-------------------//
-        val dialog= Dialog(requireContext())
-        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDashboardFragment,dialog)
+        val loadingDialog= Dialog(requireContext())
+        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDashboardFragment,loadingDialog)
 
 
 
@@ -90,12 +87,11 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
             lifecycleScope.launch(Dispatchers.Main) {
                 binding.rvUserSupers.adapter=
                     UserElementsRecycleView(superElements,context)
-                binding.rvUserSupers.layoutManager= LinearLayoutManager(requireContext(),LinearLayoutManager.HORIZONTAL,false)
+                binding.rvUserSupers.layoutManager= GridLayoutManager(requireContext(),3)
+
             }
 
         }
-
-
 
 
 //-------------------------observe supers from mainApp database-------------------------//
@@ -103,7 +99,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
         //-------------------------observe supers from mainApp database-------------------------//
         mainActivityViewModel.listOfSupers.observe(viewLifecycleOwner){supers->
-            dialog.dismiss()
+            loadingDialog.dismiss()
 
 
             //--------------Adding brand and remove numbers from the super list----------------//
@@ -115,38 +111,81 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
                 android.R.layout.simple_expandable_list_item_1,
                 supers.map { it.superName }
             )
+            binding.rvUserSupers.adapter = UserElementsRecycleView(
+                superElements,
+                this
+            )
+
 
             binding.tvSuperFinder.threshold=1
             binding.tvSuperFinder.setAdapter(adapter)
             binding.tvSuperFinder.setOnItemClickListener { parent, view, position, id ->
                 activity.hideKeyBoard()
-
+                var superName = parent.getItemAtPosition(position)
                 //----------------------add super to favorite user's super---------------------//
+
+
                 binding.btnAddSuper.setOnClickListener {
-                    val newSuperToAdd=supers.find {
-                        it.superName==parent.getItemAtPosition(position)
-                    }
 
+
+                    val newSuperToAdd = supers.find {
+                        it.superName == superName
+                    }
+                    superName = null
+                    val brandToId = findBrand(newSuperToAdd!!.brand)
+
+
+                    var link: String? = null
+                    val listenerContext = this
                     lifecycleScope.launch(Dispatchers.IO) {
-                        btnAddSuper(newSuperToAdd!!,dbSuperNames[supers.indexOf(newSuperToAdd)])
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                        }
+                        link = mainActivityViewModel.getNewLink(
+                            newSuperToAdd.storeId,
+                            findBrand(newSuperToAdd.brand)
+                        )
+                    }.invokeOnCompletion {
+
+                        if (it != null) {
+                            Toast.makeText(
+                                requireContext(),
+                                it.localizedMessage,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+//                            lifecycleScope.launch(Dispatchers.Main) {
+//                                checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+//                            }
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                mainActivityViewModel.createSuperItemsTable(
+                                    newSuperToAdd.storeId,
+                                    brandToId,
+                                    link!!
+                                )
+                                btnAddSuper(
+                                    newSuperToAdd,
+                                    dbSuperNames[supers.indexOf(newSuperToAdd)]
+                                )
+                                superElements.add(
+                                    Elements(
+                                        newSuperToAdd.superName,
+                                        brandToId,
+                                        newSuperToAdd.storeId
+                                    )
+                                )
+
+                            }.invokeOnCompletion {
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    binding.rvUserSupers.adapter =
+                                        UserElementsRecycleView(superElements, listenerContext)
+                                }
+                            }
+                        }
                     }
-                    Log.d("superfound", newSuperToAdd.toString())
 
-                    val brandToId=findBrand(newSuperToAdd!!.brand)
 
-                    superElements.add(Elements(
-                        newSuperToAdd!!.superName,
-                        brandToId,
-                        newSuperToAdd.storeId
-                    ))
 
-                    binding.rvUserSupers.adapter= UserElementsRecycleView(
-                        superElements,
-                        this
-                    )
-                    //download super //
-                    mainActivityViewModel.createSuperItemsTable(newSuperToAdd.storeId,brandToId)
-                    checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
                 }
             }
 
@@ -155,9 +194,19 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
         //-------------------------when user type, check if list not null-------------------------//
         binding.tvSuperFinder.addTextChangedListener {
             if(mainActivityViewModel.listOfSupers.value==null){
-                dialog.show()
+                if(requireActivity().checkConnectivityStatus(mainActivityViewModel, lifecycleScope = requireActivity().lifecycleScope)){
+                    loadingDialog.show()
+                }else{
+                    loadingDialog.dismiss()
+                }
             }
 
+
+        }
+        binding.btnSignOut.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            activity?.startActivity(Intent(activity, AuthActivity::class.java))
+            activity?.finish()
         }
     }
 
@@ -173,8 +222,8 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        //dashboardViewModel.deleteTableIdAndName(mainActivityViewModel.db)
     }
+
 
     @SuppressLint("SetTextI18n")
     override fun onElementRootClick(elements: Elements, adapterPosition: Int) {
@@ -226,7 +275,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
     }
 
     private fun moveToSuperFragment(elements: Elements) {
-        val singleSearchProduct = SingleSearchProduct(
+        val singleSearchProduct = SuperSearchFragment(
             null,
             StoreId_To_BrandId(elements.storeId!!, elements.brand.brandId)
         )
@@ -234,4 +283,6 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
             R.id.nav_host_fragment_activity_main_application, singleSearchProduct
         ).addToBackStack(null).commit()
     }
+
+
 }

@@ -14,7 +14,7 @@ interface ShufersalDao {
 
 
     @Query("SELECT * FROM $ITEMS_TABLE where storeId = :storeid and brandId=:brand")
-    fun getShufersalTableById(storeid: Int, brand: Int):List<Item>
+    fun getSuperTableById(storeid: Int, brand: Int):List<Item>
 
 
     //---------------------------query that returns alike names --------------------------------//

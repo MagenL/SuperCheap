@@ -1,12 +1,11 @@
 <resources>
     <string name="app_name">SuperCheap</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_main_application">MainActivityApplication</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="title_activity_main_application" translatable="false">MainActivityApplication</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
-    <string name="signing">Signing</string>
+    <string name="sign_in">Sign In</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="create_a_new_account_now">Create a new account now</string>
@@ -28,7 +27,7 @@
     <string name="city">City</string>
     <string name="search_in_my_supers">Search In My Supers</string>
     <string name="super_name">Super Name</string>
-    <string name="total_bill">total bill</string>
+    <string name="total_bill">total bill %.2f</string>
     <string name="remove">Remove</string>
     <string name="ok">OK</string>
     <string name="price_f">price: %.2f ₪</string>
@@ -51,4 +50,11 @@
     <string name="cart_created_at_s">cart created at: %s</string>
     <string name="super_name_s">super name: %s</string>
     <string name="move_to_super">Move To Super</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="find_the_ncheapest_super" translatable="false">find the\ncheapest super</string>
+    <string name="server_in_maintenance_please_try_again_later">servers in maintenance please try again later</string>
+    <string name="something_went_wrong">something went wrong: %s</string>
+    <string name="could_not_connect_to_supers_db">could not connect to supers db</string>
+    <string name="please_select_super_from_the_list">please select super from the list</string>
+    <string name="no_online_carts_associated_with_your_account_you_can_search_for_a_cart_using_the_search_button">no online carts associated with your account, you can search for a cart using the search button</string>
 </resources>
