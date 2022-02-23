@@ -56,14 +56,15 @@ class OnlineCartsFragment : FunctionalFragment(), ShoppingCartRecycleView.OnCart
                     binding.pbLoading.visibility=View.GONE
                     binding.tvNoOnlineCarts.visibility=View.VISIBLE
                 }
-
             }
         }
         onlineCartsViewModel.carts.observe(viewLifecycleOwner){
             binding.rvCarts.adapter = ShoppingCartRecycleView(it,this)
             binding.rvCarts.layoutManager = LinearLayoutManager(requireContext())
             if(it.isNotEmpty()){
-                pendingJob.cancel()
+                if(this::pendingJob.isInitialized){
+                    pendingJob.cancel()
+                }
                 binding.tvNoOnlineCarts.visibility = View.GONE
                 binding.rvCarts.visibility=View.VISIBLE
                 binding.pbLoading.visibility=View.GONE

@@ -12,11 +12,13 @@ import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.R
 import com.amagen.supercheap.databinding.ListSearchProductsFragmentBinding
 import com.amagen.supercheap.databinding.SingleSearchProductFragmentBinding
+import com.amagen.supercheap.exceptions.MyExceptions
 import com.amagen.supercheap.extensions.hideCorners
 import com.amagen.supercheap.extensions.setDialogIfApplicationLoadingData
 import com.amagen.supercheap.extensions.useNotToOppsisteZeroAndOne
 import com.amagen.supercheap.models.*
 import kotlinx.android.synthetic.main.item_dialog.*
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -140,7 +142,7 @@ open class FunctionalFragment(): Fragment() {
                         }
                     }
                     btnUpdate.setOnClickListener {
-                        lifecycleScope.launch(Dispatchers.IO) {
+                        lifecycleScope.launch(Dispatchers.IO+MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
                             getSuperLink(superDetails.storeId,findBrand(superDetails.brandId)) {link->
 
                                 Log.d(TAG, ": starting the update!")
@@ -179,7 +181,8 @@ open class FunctionalFragment(): Fragment() {
 
     fun getSuperLink(storeId:Int,brandToId:BrandToId, blockToRunIfLinkIsValid:(link:String?)->Unit){
         var alink:String? =null
-        lifecycleScope.launch(Dispatchers.IO) {
+
+        lifecycleScope.launch(Dispatchers.IO+ MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
             lifecycleScope.launch(Dispatchers.Main) {
                 checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
             }
@@ -189,7 +192,8 @@ open class FunctionalFragment(): Fragment() {
             if(it != null){
                 Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
             }else{
-                lifecycleScope.launch(Dispatchers.IO) {
+
+                lifecycleScope.launch(Dispatchers.IO+ MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
                     blockToRunIfLinkIsValid(alink)
                 }
 

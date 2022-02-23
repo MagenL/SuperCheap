@@ -10,9 +10,11 @@ import android.widget.Toast
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.*
 import com.amagen.supercheap.database.ApplicationDB
+import com.amagen.supercheap.exceptions.MyExceptions
 import com.amagen.supercheap.extensions.delayOnLifeCycle
 import com.amagen.supercheap.models.*
 import com.amagen.supercheap.network.NetworkStatusChecker
+import com.chaquo.python.PyException
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -27,6 +29,7 @@ import java.lang.IllegalArgumentException
 import java.lang.NullPointerException
 import java.lang.NumberFormatException
 import java.util.*
+import kotlin.coroutines.cancellation.CancellationException
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -64,33 +67,40 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             viewModelScope.launch(Dispatchers.Main){
                 _downloadAndCreateSuperTableProcess.value=true
             }.invokeOnCompletion {
-                viewModelScope.launch(Dispatchers.IO) {
-                    val callbackObject: PyObject = py
-                        .getModule("python_service_gz_to_json")
-                        .callAttr("download", link)
+                viewModelScope.launch(Dispatchers.IO+MyExceptions.exceptionHandlerForCoroutinesInViewModel()) {
+                        val callbackObject: PyObject = py
+                            .getModule("python_service_gz_to_json")
+                            .callAttr("download", link)
+                        if(callbackObject.isEmpty()){
+                            println("empty")
+                        }
+                        if (brand == BrandToId.SHUFERSAL) {
+                            val itemsJson = JSONObject(callbackObject.toString())
+                                .getJSONObject("root")
+                                .getJSONObject("Items")
+                                .getJSONArray("Item")
+                            jsonToSQLTable(itemsJson, superId, brand.brandId)
+                        } else {
+                            val itemsJson = JSONObject(callbackObject.toString())
+                                .getJSONObject("Prices")
+                                .getJSONObject("Products")
+                                .getJSONArray("Product")
+                            jsonToSQLTable(itemsJson, superId, brand.brandId)
+                        }
 
+                        //check if the db contains dublicated items
+                        val arr = db.FullItemTableDao().getAllDuplicateRows(superId)
+                        db.FullItemTableDao().deleteAllDuplicateRows(superId)
+                        db.FullItemTableDao().insertDeletedDuplicatedRows(arr)
 
-                    if (brand == BrandToId.SHUFERSAL) {
-                        val itemsJson = JSONObject(callbackObject.toString())
-                            .getJSONObject("root")
-                            .getJSONObject("Items")
-                            .getJSONArray("Item")
-                        jsonToSQLTable(itemsJson, superId, brand.brandId)
-                    } else {
-                        val itemsJson = JSONObject(callbackObject.toString())
-                            .getJSONObject("Prices")
-                            .getJSONObject("Products")
-                            .getJSONArray("Product")
-                        jsonToSQLTable(itemsJson, superId, brand.brandId)
-                    }
+                        //
 
-                    //check if the db contains dublicated items
-                    val arr = db.FullItemTableDao().getAllDuplicateRows(superId)
-                    db.FullItemTableDao().deleteAllDuplicateRows(superId)
-                    db.FullItemTableDao().insertDeletedDuplicatedRows(arr)
-
-                    //
-
+//                    }catch (e:Exception){
+//                        println(e.localizedMessage)
+//                        println(e.javaClass)
+//                        throw(PyException("could not download super data, please check your internet connection"))
+//                        //PyException
+//                    }
 
                 }.invokeOnCompletion {
                     if(it!=null){
@@ -129,29 +139,31 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun getNewLink(superId: Int, brand: BrandToId):String {
-
-
         _downloadAndCreateSuperTableProcess.postValue(true)
-        if (brand == BrandToId.SHUFERSAL) {
-            val link = py.getModule("findSuperLinkByIdDirect")
-                .callAttr("finder", brand.storeIdBaseURL, superId)
-                .toString()
-            if (link.isNullOrEmpty()) {
-                throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+        try{
+            if (brand == BrandToId.SHUFERSAL) {
+                val link = py.getModule("findSuperLinkByIdDirect")
+                    .callAttr("finder", brand.storeIdBaseURL, superId)
+                    .toString()
+                if (link.isNullOrEmpty()) {
+                    throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
 
-            }
-            _downloadAndCreateSuperTableProcess.postValue(false)
-            return link
+                }
+                _downloadAndCreateSuperTableProcess.postValue(false)
+                return link
 
-        } else {
-            val link = py.getModule("find_vic_super_by_id")
-                .callAttr("getLinkByID", brand.priceBaseURL, superId).toString()
-            if (link.isNullOrEmpty()) {
-                throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+            } else {
+                val link = py.getModule("find_vic_super_by_id")
+                    .callAttr("getLinkByID", brand.priceBaseURL, superId).toString()
+                if (link.isNullOrEmpty()) {
+                    throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+                }
+                return link
             }
+        }finally {
             _downloadAndCreateSuperTableProcess.postValue(false)
-            return link
         }
+
     }
 
 

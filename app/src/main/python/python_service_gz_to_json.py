@@ -3,12 +3,17 @@ import gzip
 import json
 import urllib
 import xmltodict
+import requests
 
 def download(url):
     # Download SEED database
 
     print(('Downloading SEED Database from: {}'.format(url)))
-    response = urllib.request.urlopen(url)
+    try:
+        response = urllib.request.urlopen(url)
+    except requests.exceptions.ConnectionError:
+        return {}
+
     compressed_file = io.BytesIO(response.read())
     decompressed_file = gzip.GzipFile(fileobj=compressed_file)
     return ((convert_to_json(decompressed_file.read())))

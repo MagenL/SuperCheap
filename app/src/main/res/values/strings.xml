@@ -57,4 +57,5 @@
     <string name="could_not_connect_to_supers_db">could not connect to supers db</string>
     <string name="please_select_super_from_the_list">please select super from the list</string>
     <string name="no_online_carts_associated_with_your_account_you_can_search_for_a_cart_using_the_search_button">no online carts associated with your account, you can search for a cart using the search button</string>
+    <string name="internet_fail">could not complete the operation, please try again later</string>
 </resources>

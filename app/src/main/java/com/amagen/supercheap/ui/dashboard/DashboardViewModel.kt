@@ -50,7 +50,7 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun findSuperAndSetToUserTable(superToAdd: UserFavouriteSupers, db: ApplicationDB){
+    fun upsarteUserTable(superToAdd: UserFavouriteSupers, db: ApplicationDB){
         viewModelScope.launch(Dispatchers.IO) {
             db.superTableOfIdAndName().upsertUserSingleSuper(superToAdd)
         }

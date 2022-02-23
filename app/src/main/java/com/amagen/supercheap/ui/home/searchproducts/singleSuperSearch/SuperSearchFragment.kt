@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amagen.supercheap.databinding.SingleSearchProductFragmentBinding
+import com.amagen.supercheap.exceptions.MyExceptions
 
 import com.amagen.supercheap.models.Item
 import com.amagen.supercheap.models.StoreId_To_BrandId
@@ -115,14 +116,19 @@ class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: Stor
                 Log.d("dbChecker", "creating new table")
 
                 getSuperLink(mySuper.storeId,findBrand(mySuper.brandId)){link->
-                    mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId),link!!)
-                    viewModel.addSuperToFavorite(
-                        StoreId_To_BrandId(mySuper.storeId, mySuper.brandId),
-                        mainActivityViewModel.db
-                    )
+                    lifecycleScope.launch(Dispatchers.IO+MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
+                        mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId),link!!)
+                    }.invokeOnCompletion {
+                        if(it!=null){
+                            Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
+                        }else{
+                            viewModel.addSuperToFavorite(
+                                StoreId_To_BrandId(mySuper.storeId, mySuper.brandId),
+                                mainActivityViewModel.db
+                            )
+                        }
+                    }
                 }
-
-
             } else {
                 Log.d("dbChecker", "this super db is filled already")
                 viewModel.getSuperTableById(mySuper.storeId,mySuper.brandId, mainActivityViewModel.db)

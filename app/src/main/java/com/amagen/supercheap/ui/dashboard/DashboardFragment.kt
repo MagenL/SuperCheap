@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,11 +16,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.amagen.supercheap.R
 import com.amagen.supercheap.auth.AuthActivity
 import com.amagen.supercheap.databinding.FragmentDashboardBinding
+import com.amagen.supercheap.exceptions.MyExceptions.Companion.exceptionHandlerForCoroutines
 import com.amagen.supercheap.extensions.checkConnectivityStatus
 import com.amagen.supercheap.extensions.hideCorners
 
 import com.amagen.supercheap.extensions.hideKeyBoard
-import com.amagen.supercheap.extensions.noInternetDialog
 import com.amagen.supercheap.models.*
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.ui.home.recycleview.UserElementsRecycleView
@@ -126,66 +125,74 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
 
                 binding.btnAddSuper.setOnClickListener {
-
-
-                    val newSuperToAdd = supers.find {
-                        it.superName == superName
-                    }
-                    superName = null
-                    val brandToId = findBrand(newSuperToAdd!!.brand)
-
-
-                    var link: String? = null
-                    val listenerContext = this
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        lifecycleScope.launch(Dispatchers.Main) {
-                            checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                    if(superName==null){
+                        binding.tvSuperFinder.setText("")
+                        Toast.makeText(requireContext(), "please select super again.", Toast.LENGTH_SHORT).show()
+                    }else{
+                        val newSuperToAdd = supers.find {
+                            it.superName == superName
                         }
-                        link = mainActivityViewModel.getNewLink(
-                            newSuperToAdd.storeId,
-                            findBrand(newSuperToAdd.brand)
-                        )
-                    }.invokeOnCompletion {
+                        superName = null
+                        val brandToId = findBrand(newSuperToAdd!!.brand)
 
-                        if (it != null) {
-                            Toast.makeText(
-                                requireContext(),
-                                it.localizedMessage,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-//                            lifecycleScope.launch(Dispatchers.Main) {
-//                                checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
-//                            }
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                mainActivityViewModel.createSuperItemsTable(
-                                    newSuperToAdd.storeId,
-                                    brandToId,
-                                    link!!
-                                )
-                                btnAddSuper(
-                                    newSuperToAdd,
-                                    dbSuperNames[supers.indexOf(newSuperToAdd)]
-                                )
-                                superElements.add(
-                                    Elements(
-                                        newSuperToAdd.superName,
-                                        brandToId,
-                                        newSuperToAdd.storeId
-                                    )
-                                )
 
-                            }.invokeOnCompletion {
+                        var link: String? = null
+                        val listenerContext = this
+
+
+                        lifecycleScope.launch(Dispatchers.IO+exceptionHandlerForCoroutines(requireContext())) {
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                            }
+
+                            link = mainActivityViewModel.getNewLink(
+                                newSuperToAdd.storeId,
+                                findBrand(newSuperToAdd.brand)
+                            )
+                        }.invokeOnCompletion {
+
+                            if (it != null|| link.toString().isEmpty()) {
                                 lifecycleScope.launch(Dispatchers.Main) {
-                                    binding.rvUserSupers.adapter =
-                                        UserElementsRecycleView(superElements, listenerContext)
+                                    val message = it?.localizedMessage?:"EMPTY~~"
+                                    Toast.makeText(
+                                        requireContext(),
+                                        message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    cancel()
+                                }
+
+                            } else {
+                                lifecycleScope.launch(Dispatchers.IO+exceptionHandlerForCoroutines(requireContext())) {
+                                    mainActivityViewModel.createSuperItemsTable(
+                                        newSuperToAdd.storeId,
+                                        brandToId,
+                                        link!!
+                                    )
+
+                                }.invokeOnCompletion {
+                                    lifecycleScope.launch(Dispatchers.Main){
+                                        if(it!=null){
+                                            Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
+                                        }else{
+                                            addSuperToDB(
+                                                newSuperToAdd,
+                                                dbSuperNames[supers.indexOf(newSuperToAdd)]
+                                            )
+                                            superElements.add(
+                                                Elements(
+                                                    newSuperToAdd.superName,
+                                                    brandToId,
+                                                    newSuperToAdd.storeId
+                                                )
+                                            )
+                                            binding.rvUserSupers.adapter = UserElementsRecycleView(superElements, listenerContext)
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-
-
-
                 }
             }
 
@@ -211,9 +218,16 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
     }
 
 
-    private fun btnAddSuper(superNameList: IdToSuperName, superNameToInsertToDb: String) {
-        dashboardViewModel.findSuperAndSetToUserTable(
-            UserFavouriteSupers(superNameList.storeId,superNameToInsertToDb,superNameList.superLink,Calendar.getInstance().timeInMillis, superNameList.brand), mainActivityViewModel.db
+    private fun addSuperToDB(superNameList: IdToSuperName, superNameToInsertToDb: String) {
+        dashboardViewModel.upsarteUserTable(
+            UserFavouriteSupers(
+                superNameList.storeId,
+                superNameToInsertToDb,
+                superNameList.superLink,
+                Calendar.getInstance().timeInMillis,
+                superNameList.brand
+            ),
+            mainActivityViewModel.db
         )
         binding.tvSuperFinder.setText("");
     }
