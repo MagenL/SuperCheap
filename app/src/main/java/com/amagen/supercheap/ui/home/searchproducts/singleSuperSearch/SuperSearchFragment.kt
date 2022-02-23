@@ -116,6 +116,9 @@ class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: Stor
                 Log.d("dbChecker", "creating new table")
 
                 getSuperLink(mySuper.storeId,findBrand(mySuper.brandId)){link->
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                    }
                     lifecycleScope.launch(Dispatchers.IO+MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
                         mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId),link!!)
                     }.invokeOnCompletion {
@@ -240,11 +243,3 @@ class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: Stor
         _binding=null
     }
 }
-
-
-//object callback : (Boolean) -> Unit {
-//    override fun invoke(p1: Boolean) {
-//        Log.d("onCallbackInvoked", "invoke: ")
-//    }
-//
-//}

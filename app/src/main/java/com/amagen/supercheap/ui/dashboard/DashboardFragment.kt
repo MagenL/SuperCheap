@@ -163,6 +163,9 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
                                 }
 
                             } else {
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
+                                }
                                 lifecycleScope.launch(Dispatchers.IO+exceptionHandlerForCoroutines(requireContext())) {
                                     mainActivityViewModel.createSuperItemsTable(
                                         newSuperToAdd.storeId,
