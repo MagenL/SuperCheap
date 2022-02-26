@@ -55,7 +55,7 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
         //--------------------if application is loading- display loading dialog-------------------//
         val loadingDialog= Dialog(requireContext())
-        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDashboardFragment,loadingDialog)
+        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDownloadingSupers,loadingDialog)
 
 
 
@@ -72,7 +72,6 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
 
             val userFavouriteSupers = mainActivityViewModel.db.superTableOfIdAndName().getAllUserFavSupers()
             userFavouriteSupers.map {
-
                 superElements.add(
                     Elements(
                         mainActivityViewModel.UIUserFavSuper(it.superName,it.brand),
@@ -165,31 +164,31 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
                             } else {
                                 lifecycleScope.launch(Dispatchers.Main) {
                                     checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
-                                }
-                                lifecycleScope.launch(Dispatchers.IO+exceptionHandlerForCoroutines(requireContext())) {
-                                    mainActivityViewModel.createSuperItemsTable(
-                                        newSuperToAdd.storeId,
-                                        brandToId,
-                                        link!!
-                                    )
+                                    lifecycleScope.launch(Dispatchers.IO+exceptionHandlerForCoroutines(requireContext())) {
+                                        mainActivityViewModel.createSuperItemsTable(
+                                            newSuperToAdd.storeId,
+                                            brandToId,
+                                            link!!
+                                        )
 
-                                }.invokeOnCompletion {
-                                    lifecycleScope.launch(Dispatchers.Main){
-                                        if(it!=null){
-                                            Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
-                                        }else{
-                                            addSuperToDB(
-                                                newSuperToAdd,
-                                                dbSuperNames[supers.indexOf(newSuperToAdd)]
-                                            )
-                                            superElements.add(
-                                                Elements(
-                                                    newSuperToAdd.superName,
-                                                    brandToId,
-                                                    newSuperToAdd.storeId
+                                    }.invokeOnCompletion {
+                                        lifecycleScope.launch(Dispatchers.Main){
+                                            if(it!=null){
+                                                Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
+                                            }else{
+                                                addSuperToDB(
+                                                    newSuperToAdd,
+                                                    dbSuperNames[supers.indexOf(newSuperToAdd)]
                                                 )
-                                            )
-                                            binding.rvUserSupers.adapter = UserElementsRecycleView(superElements, listenerContext)
+                                                superElements.add(
+                                                    Elements(
+                                                        newSuperToAdd.superName,
+                                                        brandToId,
+                                                        newSuperToAdd.storeId
+                                                    )
+                                                )
+                                                binding.rvUserSupers.adapter = UserElementsRecycleView(superElements, listenerContext)
+                                            }
                                         }
                                     }
                                 }

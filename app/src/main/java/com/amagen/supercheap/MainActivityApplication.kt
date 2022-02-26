@@ -41,7 +41,8 @@ class MainActivityApplication : AppCompatActivity() {
 
         //checkConnectivityStatus(false)
 
-        this.checkConnectivityStatus(mainActivityViewModel, lifecycleScope = lifecycleScope,)
+        this.checkConnectivityStatus(mainActivityViewModel, lifecycleScope = lifecycleScope)
+
         //delete when check is done
 
 

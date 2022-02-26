@@ -47,13 +47,38 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/ti_layout_displayname"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@+id/ti_layout_email"
+                app:layout_constraintEnd_toEndOf="@+id/ti_layput_password"
+                app:layout_constraintStart_toStartOf="@+id/ti_layput_password"
+                app:layout_constraintTop_toTopOf="@id/gl_15_signup"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="24dp"
+                >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/tv_displayname"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/gentle_blue"
+                    android:hint="@string/nick_name" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+
+
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/ti_layout_email"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toTopOf="@+id/ti_layput_password"
                 app:layout_constraintEnd_toEndOf="@+id/ti_layput_password"
                 app:layout_constraintStart_toStartOf="@+id/ti_layput_password"
-                app:layout_constraintTop_toTopOf="@id/gl_25_signup">
+                app:layout_constraintTop_toTopOf="@id/ti_layout_displayname">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tv_email"
@@ -116,11 +141,11 @@
 
 
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/gl_25_signup"
+                android:id="@+id/gl_15_signup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                app:layout_constraintGuide_percent="0.25" />
+                app:layout_constraintGuide_percent="0.15" />
 
             <TextView
                 android:id="@+id/tv_email_verification_status"
@@ -164,6 +189,15 @@
                 app:layout_constraintBottom_toBottomOf="@+id/sign_up_button_With_Email"
                 app:layout_constraintEnd_toEndOf="@+id/sign_up_button_With_Email"
                 app:layout_constraintTop_toTopOf="@+id/sign_up_button_With_Email" />
+
+            <TextView
+                android:id="@+id/tv_send_verification_email_again"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toTopOf="@+id/btn_when_email_verified"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -30,6 +30,7 @@ fun Context.setDialogIfApplicationLoadingData(loading: LiveData<Boolean>,dialog:
     dialog.setContentView(R.layout.loading_layout)
     dialog.findViewById<WebView>(R.id.wv_animation_presentation).loadUrl("file:///android_asset/index.html")
     dialog.hideCorners()
+    dialog.setCancelable(false)
 
     loading.observe(lifecycleOwner) {
         if (it) {
@@ -78,10 +79,14 @@ fun View.delayOnLifeCycle(
 fun View.delayOnLifeCycle(
     durationInMillis:Long,
     dispatcher:CoroutineDispatcher = Dispatchers.Main,
+    view:View,
     block:()->Unit
 ): Job?=findViewTreeLifecycleOwner()?.let { lifecycleOwner ->
     lifecycleOwner.lifecycle.coroutineScope.launch(dispatcher) {
+         view.isEnabled = false
+        block()
         delay(durationInMillis)
+        view.isEnabled = true
     }
 }
 fun Activity.checkConnectivityStatus(

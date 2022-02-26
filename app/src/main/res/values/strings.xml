@@ -58,4 +58,11 @@
     <string name="please_select_super_from_the_list">please select super from the list</string>
     <string name="no_online_carts_associated_with_your_account_you_can_search_for_a_cart_using_the_search_button">no online carts associated with your account, you can search for a cart using the search button</string>
     <string name="internet_fail">could not complete the operation, please try again later</string>
+    <string name="nick_name">nick name</string>
+    <string name="send_verification_email_again">click here to send email again</string>
+    <string name="please_verify_your_account">Please verify your account</string>
+    <string name="nickname_validation_lenght">nick name has to be between 2 to 10 characters</string>
+    <string name="invalid_email_try_again">invalid email please try again</string>
+    <string name="password_validation_6chars">password must contains 6 characters</string>
+    <string name="welcome_space">Welcome </string>
 </resources>

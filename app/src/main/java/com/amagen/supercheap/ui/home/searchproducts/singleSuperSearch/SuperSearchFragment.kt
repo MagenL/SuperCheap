@@ -1,6 +1,7 @@
 package com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch
 
 import android.R
+import android.app.Dialog
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.util.Log
@@ -9,16 +10,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.lifecycle.LiveData
+
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amagen.supercheap.databinding.SingleSearchProductFragmentBinding
 import com.amagen.supercheap.exceptions.MyExceptions
+import com.amagen.supercheap.extensions.checkConnectivityStatus
+import com.amagen.supercheap.extensions.delayOnLifeCycle
 
 import com.amagen.supercheap.models.Item
 import com.amagen.supercheap.models.StoreId_To_BrandId
 import com.amagen.supercheap.models.UserFavouriteSupers
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.recycleview.SingleProductRecycleView
+import kotlinx.coroutines.CoroutineExceptionHandler
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,31 +63,45 @@ class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: Stor
 
         if(storeidToBrandid!=null){
             initUIPageWithItems()
+
+        }else{
+            //-------------------------find supers-------------------------//
+            viewModel.supersLink.observe(viewLifecycleOwner){
+                findAllSupers_andSetAdapter(it)
+            }
         }
 
 
 
-        //-------------------------find supers-------------------------//
-        viewModel.supersLink.observe(viewLifecycleOwner){
-            findAllSupers_andSetAdapter(it)
-        }
+
 
         //-------------------------add list to firebase-------------------------//
 
 
         binding.btnUpList.setOnClickListener {
-            var superName=""
+            var superName:String
             lifecycleScope.launch(Dispatchers.IO) {
-                superName = viewModel.getSuperName(mainActivityViewModel.db,StoreId_To_BrandId(selecetedItems[0].storeId,selecetedItems[0].brandId))
-                superName = mainActivityViewModel.UIUserFavSuper(superName,selecetedItems[0].brandId)
-                viewModel.uploadCartToDB(selecetedItems,superName)
-                lifecycleScope.launch(Dispatchers.Main) {
-                    viewModel.uploadToFirebaseListener.observe(viewLifecycleOwner){
-                        if (it){
-                            Toast.makeText(requireContext(), "uploaded successfully", Toast.LENGTH_SHORT).show()
-                            binding.rvSingleItem.adapter!!.notifyItemRangeRemoved(0,selecetedItems.size)
-                            selecetedItems.clear()
+                if(selecetedItems.isNotEmpty()){
+                    superName = viewModel.getSuperName(mainActivityViewModel.db,StoreId_To_BrandId(selecetedItems[0].storeId,selecetedItems[0].brandId))
+                    if(superName.isNotEmpty()){
+                        it.delayOnLifeCycle(durationInMillis = 4000L,view= binding.btnUpList){
+                            superName = mainActivityViewModel.UIUserFavSuper(superName,selecetedItems[0].brandId)
+                            viewModel.uploadCartToDB(selecetedItems,superName)
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                viewModel.uploadToFirebaseListener.observe(viewLifecycleOwner){
+                                    if (it){
+                                        Toast.makeText(requireContext(), "uploaded successfully", Toast.LENGTH_SHORT).show()
+                                        binding.rvSingleItem.adapter!!.notifyItemRangeRemoved(0,selecetedItems.size)
+                                        selecetedItems.clear()
+                                    }
+                                }
+                            }
                         }
+
+                    }
+                }else{
+                    lifecycleScope.launch(Dispatchers.Main){
+                        Toast.makeText(requireContext(), "please fill super and list to upload", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -114,21 +134,20 @@ class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: Stor
                     .getSuperTableById(mySuper.storeId,mySuper.brandId).isEmpty()
             ) {
                 Log.d("dbChecker", "creating new table")
-
                 getSuperLink(mySuper.storeId,findBrand(mySuper.brandId)){link->
                     lifecycleScope.launch(Dispatchers.Main) {
                         checkIfFragmentLoadingData(mainActivityViewModel.downloadAndCreateSuperTableProcess)
-                    }
-                    lifecycleScope.launch(Dispatchers.IO+MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
-                        mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId),link!!)
-                    }.invokeOnCompletion {
-                        if(it!=null){
-                            Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
-                        }else{
-                            viewModel.addSuperToFavorite(
-                                StoreId_To_BrandId(mySuper.storeId, mySuper.brandId),
-                                mainActivityViewModel.db
-                            )
+                        lifecycleScope.launch(Dispatchers.IO+MyExceptions.exceptionHandlerForCoroutines(requireContext())) {
+                            mainActivityViewModel.createSuperItemsTable(mySuper.storeId, findBrand(mySuper.brandId),link!!)
+                        }.invokeOnCompletion {
+                            if(it!=null){
+                                Toast.makeText(requireContext(), it.localizedMessage, Toast.LENGTH_SHORT).show()
+                            }else{
+                                viewModel.addSuperToFavorite(
+                                    StoreId_To_BrandId(mySuper.storeId, mySuper.brandId),
+                                    mainActivityViewModel.db
+                                )
+                            }
                         }
                     }
                 }
@@ -191,23 +210,52 @@ class SuperSearchFragment(val items:List<Item>?=null, val storeidToBrandid: Stor
     }
 
     private fun initUIPageWithItems() {
-        currentlySuper = storeidToBrandid!!.storeId
-        if(items!=null){
-            selecetedItems.addAll(items)
-        }
-        var superName=""
-        lifecycleScope.launch(Dispatchers.IO) {
-            superName = viewModel.getSuperName(mainActivityViewModel.db,storeidToBrandid.storeId,storeidToBrandid.brandId)
-            superName = mainActivityViewModel.UIUserFavSuper(superName,storeidToBrandid.brandId)
-        }.invokeOnCompletion {
-            try{
-                binding.searchSuper.setText(superName)
-            }catch (e:NullPointerException){
-                println("super name not found")
+        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDownloadingSupers)
+        mainActivityViewModel.loadingProcessForDownloadingSupers.observe(viewLifecycleOwner){
+            if(!it){
+                lifecycleScope.launch(Dispatchers.IO){
+                    if(!mainActivityViewModel.db.superTableOfIdAndName()
+                            .getStoreNameByBrandAndStoreIdGeneralTable(storeidToBrandid!!.storeId,storeidToBrandid.brandId)
+                            .isNullOrEmpty()){
+                        currentlySuper = storeidToBrandid.storeId
+                        if(items!=null){
+                            selecetedItems.addAll(items)
+                        }
+                        var superName=""
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            superName = viewModel.getSuperName(mainActivityViewModel.db,storeidToBrandid.storeId,storeidToBrandid.brandId)
+                            superName = mainActivityViewModel.UIUserFavSuper(superName,storeidToBrandid.brandId)
+
+                        }.invokeOnCompletion {
+                            try{
+                                lifecycleScope.launch(Dispatchers.Main){
+                                    binding.searchSuper.setText(superName)
+                                    binding.searchSuper.isEnabled=false
+                                    whenSuperIsSelected_searchOrInseretItems(storeidToBrandid)
+                                }
+                            }catch (e:NullPointerException){
+                                println("super name not found")
+                            }
+
+                        }
+                    }else{
+                        // handling the situation when user have been terminated the supers download process
+                        // or
+                        // user's db is not up to date i.e not filling the the super it tries to access to
+
+                        mainActivityViewModel.getAllSupers()
+                        lifecycleScope.launch(Dispatchers.Main){
+                            checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDownloadingSupers)
+                            mainActivityViewModel.loadingProcessForDownloadingSupers.observe(viewLifecycleOwner){
+                                if(!it){
+                                    initUIPageWithItems()
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        binding.searchSuper.isEnabled=false
-        whenSuperIsSelected_searchOrInseretItems(storeidToBrandid)
     }
 
     //-------------------------delete previous list if user changed super-------------------------//

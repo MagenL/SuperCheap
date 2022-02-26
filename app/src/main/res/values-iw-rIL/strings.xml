@@ -51,4 +51,13 @@
     <string name="something_went_wrong">%s : אופס, משהו השתבש</string>
     <string name="could_not_connect_to_supers_db">לא ניתן היה להשלים את פעולת הורדת הסופר</string>
     <string name="please_select_super_from_the_list">אנא סמן סופר מתוך הרשימה</string>
+    <string name="no_online_carts_associated_with_your_account_you_can_search_for_a_cart_using_the_search_button">לא נמצאו עגלות, ניתן לחפש ו-/או להעלות עגלות חדשות</string>
+    <string name="internet_fail">"לא ניתן היה לבצע את הפעולה, אנא נסי/ה לבצע את הפעולה שוב "</string>
+    <string name="nick_name">שם חיבה</string>
+    <string name="send_verification_email_again">לחץ/צי כאן כדי לשלוח מייל אימות שוב</string>
+    <string name="please_verify_your_account">אנא אשרו את החשבון שלכם במייל</string>
+    <string name="nickname_validation_lenght">שם החיבה צריך להיות בעל שני תווים ועד עשרה תווים</string>
+    <string name="invalid_email_try_again">כתובת המייל אינה חוקית, אנא בדוק/בדקי את המייל ונסי/ה שוב</string>
+    <string name="password_validation_6chars">ססמה צריכה להיות בגודל של לפחות 6 תווים</string>
+    <string name="welcome_space">"ברוכים הבאים "</string>
 </resources>

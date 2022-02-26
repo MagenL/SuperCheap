@@ -1,33 +1,19 @@
 package com.amagen.supercheap
 
 import android.app.Application
-import android.app.Dialog
-import android.content.Context
-import android.content.res.Resources
-import android.net.ConnectivityManager
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.*
 import com.amagen.supercheap.database.ApplicationDB
 import com.amagen.supercheap.exceptions.MyExceptions
-import com.amagen.supercheap.extensions.delayOnLifeCycle
 import com.amagen.supercheap.models.*
-import com.amagen.supercheap.network.NetworkStatusChecker
-import com.chaquo.python.PyException
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.android.synthetic.main.no_internet_alert.*
 import kotlinx.coroutines.*
 import org.json.JSONArray
 import org.json.JSONObject
-import retrofit2.HttpException
-import java.lang.IllegalArgumentException
-import java.lang.NullPointerException
-import java.lang.NumberFormatException
 import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -41,8 +27,8 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val downloadAndCreateSuperTableProcess:LiveData<Boolean> get() = _downloadAndCreateSuperTableProcess
 
 
-    private var dashboardLoading :MutableLiveData<Boolean> = MutableLiveData(false)
-    val loadingProcessForDashboardFragment:LiveData<Boolean> get() = dashboardLoading
+    private var _loadingProcessForDownloadingSupers :MutableLiveData<Boolean> = MutableLiveData(false)
+    val loadingProcessForDownloadingSupers:LiveData<Boolean> get() = _loadingProcessForDownloadingSupers
 
 
     private val itemOptionList = MutableLiveData<List<Item>>()
@@ -93,14 +79,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         db.FullItemTableDao().deleteAllDuplicateRows(superId)
                         db.FullItemTableDao().insertDeletedDuplicatedRows(arr)
 
-                        //
 
-//                    }catch (e:Exception){
-//                        println(e.localizedMessage)
-//                        println(e.javaClass)
-//                        throw(PyException("could not download super data, please check your internet connection"))
-//                        //PyException
-//                    }
 
                 }.invokeOnCompletion {
                     if(it!=null){
@@ -166,11 +145,10 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
 
     }
 
-
     fun getAllSupers() {
 
         viewModelScope.launch(Dispatchers.Main) {
-            dashboardLoading.value = true
+            _loadingProcessForDownloadingSupers.value = true
         }
         viewModelScope.launch(Dispatchers.IO) {
             if (db.superTableOfIdAndName().getAllSupers().isEmpty()) {
@@ -192,7 +170,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         ).type
                     )
                 )
-//               victory
+                //               victory
                 val pyVictoryBrandsIdAndName = py.getModule("victory_scrapping")
                     .callAttr("starter", BrandToId.VICTORY.priceBaseURL)
                 val jsonArrayOfVictoryItems = JSONArray(pyVictoryBrandsIdAndName.toString())
@@ -205,17 +183,22 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         ).type
                     )
                 )
-
             }
         }.invokeOnCompletion {
             viewModelScope.launch(Dispatchers.IO) {
                 superNameAndId.postValue(db.superTableOfIdAndName().getAllSupers())
             }
             viewModelScope.launch(Dispatchers.Main) {
-                dashboardLoading.value = false
+                _loadingProcessForDownloadingSupers.value = false
             }
 
         }
+
+
+
+    }
+
+    suspend fun initSupers() {
 
 
 
