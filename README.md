@@ -99,11 +99,11 @@ The retrieved data I stored in **Room database** and display it to the user with
 * All the downloaded data from the Consumer Protection and FairTrade Authority of Israel API stored in room database.\
 This way, the application can use the downloaded data without an Internet connection.
 
-*If the user's database is older that 24h, the application suggest the user to update the database.
+* If the user's database is older that 24h, the application suggest the user to update the database.
 
 **LiveData**
 
-*LiveData is an observable data holder class.
+* LiveData is an observable data holder class.
 
 * Displaying the supermarkets database from Room database with livedata.
 
@@ -116,8 +116,14 @@ This way, the application can use the downloaded data without an Internet connec
 **Picasso**
 * Downloading images and present it to the UI with Picasso library.
 
+
+**ViewPager2**
+* Using ViewPager2 to Display onboarding screens on the first time the user has entered the application.
+* To save the state of the user, I used `Shared preferences`.
+
 **SharedPreferences**
 * Storage and mangement user flags data.
+
 
 
 ### Author
