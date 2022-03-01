@@ -5,7 +5,7 @@ This project is an Android application that compares supermarket prices via an A
 
 ## Description
 
-This application retrieve data from 4 big supermarket brands in Israel - Shufersal, Mahsani Ashok, Super Bareket and Victory.
+This application retrieve data of 4 big supermarket brands in Israel - Shufersal, Mahsani Ashok, Super Bareket and Victory.
 In the app you can do the following :
 
 
