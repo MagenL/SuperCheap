@@ -60,4 +60,14 @@
     <string name="invalid_email_try_again">כתובת המייל אינה חוקית, אנא בדוק/בדקי את המייל ונסי/ה שוב</string>
     <string name="password_validation_6chars">ססמה צריכה להיות בגודל של לפחות 6 תווים</string>
     <string name="welcome_space">"ברוכים הבאים "</string>
+    <string name="online_carts">עגלות מהענן</string>
+    <string name="first_screen_onboarding_text">חפש סופרים דרך מסך הגדרות אישיות</string>
+    <string name="next">הבא</string>
+    <string name="finish">סיים</string>
+    <string name="_2_make_a_list_in_specific_super">צור רשימה בסופר ספציפי</string>
+    <string name="_1_compare_item_prices_in_your_selected_supers">השווה מוצר/ים בין הסופרים שלך</string>
+    <string name="welcome_to_supercheap">ברוכים הבאים לאפליקציית Super Cheap</string>
+    <string name="find_share_and_re_use_carts_in_the_online_carts_screen">מצא, שתף והשתמש שוב בעגלות שלך במסך עגלות מהענן</string>
+    <string name="in_home_screen_you_can_navigate_to_2_different_screens">ממסך הבית ניתן לנווט ל 2 המסכים הבאים:</string>
+    <string name="search_product_nin_specific_super">צור רשימה בסופר ספציפי</string>
 </resources>

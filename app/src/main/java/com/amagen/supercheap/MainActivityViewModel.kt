@@ -146,7 +146,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun getAllSupers() {
-
         viewModelScope.launch(Dispatchers.Main) {
             _loadingProcessForDownloadingSupers.value = true
         }
@@ -170,7 +169,9 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         ).type
                     )
                 )
+
                 //               victory
+
                 val pyVictoryBrandsIdAndName = py.getModule("victory_scrapping")
                     .callAttr("starter", BrandToId.VICTORY.priceBaseURL)
                 val jsonArrayOfVictoryItems = JSONArray(pyVictoryBrandsIdAndName.toString())
@@ -183,6 +184,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         ).type
                     )
                 )
+
             }
         }.invokeOnCompletion {
             viewModelScope.launch(Dispatchers.IO) {
@@ -193,12 +195,6 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             }
 
         }
-
-
-
-    }
-
-    suspend fun initSupers() {
 
 
 

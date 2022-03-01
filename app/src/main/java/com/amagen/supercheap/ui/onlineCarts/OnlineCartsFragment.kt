@@ -30,8 +30,6 @@ class OnlineCartsFragment : FunctionalFragment(), ShoppingCartRecycleView.OnCart
     private var _binding: FragmentHistoryBinding? = null
     private lateinit var searchDialog:Dialog
     private lateinit var pendingJob:Job
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(

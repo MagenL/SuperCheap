@@ -1,11 +1,20 @@
 package com.amagen.supercheap.ui.home
 
+import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.compose.ui.text.toLowerCase
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.marginBottom
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -14,14 +23,14 @@ import com.amagen.supercheap.databinding.FragmentHomeBinding
 import com.amagen.supercheap.extensions.delayOnLifeCycle
 import com.amagen.supercheap.network.NetworkStatusChecker
 import com.amagen.supercheap.ui.home.searchproducts.findTheCheapestSuper.FindTheChpeastSuperFragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.util.*
 
 open class HomeFragment : Fragment() {
 
 
     private var _binding: FragmentHomeBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -29,8 +38,11 @@ open class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        if(Locale.getDefault().language.lowercase()=="he"||Locale.getDefault().language.lowercase()=="iw"){
+            binding.tvMagnifier.x= -200.0F
+            binding.tvMagnifier.text = "חפש את הסופר\n הזול ביותר"
+        }
         return binding.root
     }
 
@@ -38,7 +50,8 @@ open class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        //checkConnectivityStatus()
+
+
 
 
 

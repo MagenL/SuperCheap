@@ -1,25 +1,17 @@
 package com.amagen.supercheap
 
-import android.app.Dialog
-import android.net.ConnectivityManager
+import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
+import android.view.View
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.amagen.supercheap.databinding.ActivityMainApplicationBinding
 import com.amagen.supercheap.extensions.checkConnectivityStatus
-import com.amagen.supercheap.extensions.delayOnLifeCycle
-import com.amagen.supercheap.extensions.hideCorners
-import com.amagen.supercheap.network.NetworkStatusChecker
-import kotlinx.android.synthetic.main.no_internet_alert.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivityApplication : AppCompatActivity() {
 
@@ -29,6 +21,8 @@ class MainActivityApplication : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(R.style.Theme_SuperCheap)
+
 
         binding = ActivityMainApplicationBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -37,44 +31,33 @@ class MainActivityApplication : AppCompatActivity() {
         navView.setupWithNavController(navController)
 
 
+
         mainActivityViewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
 
-        //checkConnectivityStatus(false)
 
         this.checkConnectivityStatus(mainActivityViewModel, lifecycleScope = lifecycleScope)
 
-        //delete when check is done
+
+        val sharedpref = getSharedPreferences("onboarding", Context.MODE_PRIVATE)
+        if(!sharedpref.getBoolean("finish",false)){
+            hideNavbar(navController)
+        }
+
 
 
     }
 
 
-//    private fun checkConnectivityStatus(flag:Boolean):Boolean {
-//        //check connectivity status
-//        val connectivityManager = getSystemService(ConnectivityManager::class.java)
-//        if(NetworkStatusChecker(connectivityManager).hasInternetConnection()){
-//            mainActivityViewModel.getAllSupers()
-//        }else{
-//            if(!flag){
-//                val dialog= Dialog(this)
-//                dialog.hideCorners()
-//                dialog.setContentView(R.layout.no_internet_alert)
-//                dialog.btn_ok_dialog.setOnClickListener {
-//                    dialog.dismiss()
-//                }
-//                dialog.show()
-//            }
-//            lifecycleScope.launch {
-//                delay(5000)
-//                lifecycleScope.launch(Dispatchers.IO) {
-//                    if(mainActivityViewModel.db.superTableOfIdAndName().getAllSupers().isEmpty()){
-//                        checkConnectivityStatus(true)
-//                    }
-//                }
-//            }
-//        }
-//        return false
-//    }
+    fun hideNavbar(navController: NavController) {
+        binding.navView.visibility= View.GONE
+        navController.navigate(R.id.action_navigation_home_to_viewPagerFragment)
+
+    }
+    public fun showNavBar(){
+        binding.navView.visibility= View.VISIBLE
+    }
+
+
 
 
 }

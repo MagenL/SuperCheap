@@ -9,7 +9,7 @@
     <item
         android:id="@+id/historyFragment"
         android:icon="@drawable/ic_baseline_history"
-        android:title="@string/history_purchase" />
+        android:title="@string/online_carts" />
 
     <item
         android:id="@+id/dashboardFragment"

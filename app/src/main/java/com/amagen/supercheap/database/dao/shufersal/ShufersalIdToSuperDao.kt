@@ -27,9 +27,6 @@ interface ShufersalIdToSuperDao {
     @Query("select superName from $ID_TO_SUPER_NAME where superName like '%'|| :name || '%' ")
     suspend fun getShufersalSuperName(name:String):List<String>
 
-//    @Query("select * from  IdToSuperName where superName= :mySuper")
-//    suspend fun getSpecificSuperByName(mySuper:String):UserFavouriteSupers
-
 
     @Query("select superName from $ID_TO_SUPER_NAME")
     suspend fun getAllShufersalSupersName():List<String>
@@ -42,9 +39,6 @@ interface ShufersalIdToSuperDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertUserSingleSuper(userFavouriteSupers:UserFavouriteSupers)
-
-//    @Query("select superLink from UserFavouriteSupers where superName like '%'|| :name || '%' ")
-//    suspend fun getResultForUserTypingFavSuper(name:String):List<UserFavouriteSupers>
 
     @Query("select * from $ID_TO_SUPER_NAME")
     suspend fun getAllSupers():List<IdToSuperName>
@@ -85,10 +79,5 @@ interface ShufersalIdToSuperDao {
 
     @Query("select distinct brand from $MY_FAV_SUPERS")
     fun getUserFavBrands():List<Int>
-
-
-
-//    @Query("select * from userfavouritesupers where :string")
-//    fun getByRequest(string:String)
 
 }

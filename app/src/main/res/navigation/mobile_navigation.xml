@@ -17,6 +17,10 @@
             android:id="@+id/action_navigation_home_to_singleSearchProduct"
             app:enterAnim="@anim/nav_default_pop_enter_anim"
             app:destination="@id/singleSearchProduct" />
+        <action
+            android:id="@+id/action_navigation_home_to_viewPagerFragment"
+            app:destination="@id/viewPagerFragment"
+            app:popUpTo="@id/navigation_home" />
     </fragment>
 
     <fragment
@@ -49,4 +53,15 @@
         android:name="com.amagen.supercheap.ui.onlineCarts.OnlineCartsFragment"
         android:label="fragment_history"
         tools:layout="@layout/fragment_history" />
+    <fragment
+        android:id="@+id/viewPagerFragment"
+        android:name="com.amagen.supercheap.onboarding.ViewPagerFragment"
+        android:label="fragment_view_pager"
+        tools:layout="@layout/fragment_view_pager" >
+        <action
+            android:id="@+id/action_viewPagerFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/navigation_home"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

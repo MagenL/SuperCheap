@@ -34,7 +34,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk{
-            abiFilters "armeabi-v7a","x86"
+//            abiFilters "armeabi-v7a","x86"
+            abiFilters 'armeabi-v7a','arm64-v8a','x86','x86_64'
         }
         python{
 //            buildPython "/usr/bin/python3.8"
@@ -150,9 +151,7 @@ dependencies {
 
     def nav_version = "2.3.5"
 
-    // Java language implementation
-    implementation("androidx.navigation:navigation-fragment:$nav_version")
-    implementation("androidx.navigation:navigation-ui:$nav_version")
+
 
     // Kotlin
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")

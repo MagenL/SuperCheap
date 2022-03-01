@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">SuperCheap</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="title_activity_main_application" translatable="false">MainActivityApplication</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
@@ -65,4 +64,15 @@
     <string name="invalid_email_try_again">invalid email please try again</string>
     <string name="password_validation_6chars">password must contains 6 characters</string>
     <string name="welcome_space">Welcome </string>
+    <string name="online_carts">Online Carts</string>
+    <string name="first_screen_onboarding_text">search for supers in dashboard screen</string>
+    <string name="next">next</string>
+    <string name="finish">Finish</string>
+    <string name="_2_make_a_list_in_specific_super">2. make a list in specific super</string>
+    <string name="_1_compare_item_prices_in_your_selected_supers">1. compare Item prices in your selected supers</string>
+    <string name="welcome_to_supercheap">Welcome to SuperCheap!</string>
+    <string name="find_share_and_re_use_carts_in_the_online_carts_screen">find, share and re-use carts in the Online Carts screen</string>
+    <string name="in_home_screen_you_can_navigate_to_2_different_screens">In home screen you can navigate to 2 different screens -</string>
+    <string name="search_product_nin_specific_super">create a list \nin specific super</string>
+
 </resources>

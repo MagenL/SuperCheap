@@ -44,11 +44,6 @@ interface ShufersalDao {
     fun getUserStoresCount():Int
 
 
-    //find all products which repeats in all supers - >
-//    @Query("select distinct storeId, brandId from $SUB_TABLE_NAME_ITEMS_ITEM GROUP BY itemName HAVING COUNT(itemName)=:allUserSupers " )
-//    suspend fun getSuperAndBrandForFoundItems(allUserSupers:Int):List<StoreId_To_BrandId>
-
-
     @Query("select distinct itemPrice from $ITEMS_TABLE where storeId = :storeid and brandId = :brandid and itemName= :itemname")
     fun getPriceFromSuper(storeid: Int, brandid:Int, itemname: String):Double
 
