@@ -18,7 +18,7 @@ abstract class ApplicationDB:RoomDatabase() {
 
     companion object{
         fun create(context:Context):ApplicationDB=Room.databaseBuilder(context, ApplicationDB::class.java, DB_NAME)
-            .fallbackToDestructiveMigration().build()
+            .build()
     }
     //get the dao object.
     abstract fun FullItemTableDao(): ShufersalDao
