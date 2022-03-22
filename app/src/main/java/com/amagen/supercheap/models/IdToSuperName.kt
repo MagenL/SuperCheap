@@ -15,3 +15,5 @@ data class IdToSuperName (
     val superLink:String,
     val brand:Int = BrandToId.SHUFERSAL.brandId
 )
+
+

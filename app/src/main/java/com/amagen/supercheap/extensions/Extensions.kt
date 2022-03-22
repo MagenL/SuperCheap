@@ -9,11 +9,11 @@ import android.util.Patterns
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
-import android.widget.Button
 import androidx.lifecycle.*
 import com.amagen.supercheap.MainActivityViewModel
 import com.amagen.supercheap.R
 import com.amagen.supercheap.network.NetworkStatusChecker
+import kotlinx.android.synthetic.main.loading_layout.*
 import kotlinx.android.synthetic.main.no_internet_alert.*
 import kotlinx.coroutines.*
 
@@ -25,7 +25,7 @@ fun CharSequence?.isPhoneValid() = !isNullOrEmpty()&&Patterns.PHONE.matcher(this
 fun Activity?.hideKeyBoard(){
     this?.getSystemService(InputMethodManager::class.java)?.hideSoftInputFromWindow(this?.currentFocus?.windowToken,0)
 }
-fun Context.setDialogIfApplicationLoadingData(loading: LiveData<Boolean>,dialog:Dialog,lifecycleOwner: LifecycleOwner){
+fun Context.setDialogIfApplicationLoadingData(loading: LiveData<Boolean>,dialog:Dialog,lifecycleOwner: LifecycleOwner, progress:LiveData<Int>?=null){
 
     dialog.setContentView(R.layout.loading_layout)
     dialog.findViewById<WebView>(R.id.wv_animation_presentation).loadUrl("file:///android_asset/index.html")
@@ -40,6 +40,16 @@ fun Context.setDialogIfApplicationLoadingData(loading: LiveData<Boolean>,dialog:
             Log.d("dbchecker", "dismiss $it")
             dialog.dismiss()
         }
+    }
+    progress?.observe(lifecycleOwner){
+
+        dialog.pb_percent.visibility=View.VISIBLE
+        dialog.tv_progress.visibility=View.VISIBLE
+
+        dialog.pb_percent.setProgress(it,true)
+        val p:String = "${((it / 389.0) * 100).toInt()} %"
+        dialog.tv_progress.text=p
+//        dialog.tv_progress.text=resources.getText(R.string.progress_precent,((it/389)*100).toString())
     }
 
 }

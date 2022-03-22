@@ -10,6 +10,7 @@ import java.util.*
 
 
 const val ID_TO_SUPER_NAME="IdToSuperName"
+const val TEMP_TABLE ="TEMPTABLE"
 const val MY_FAV_SUPERS="UserFavouriteSupers"
 
 @Dao
@@ -79,5 +80,14 @@ interface ShufersalIdToSuperDao {
 
     @Query("select distinct brand from $MY_FAV_SUPERS")
     fun getUserFavBrands():List<Int>
+
+
+
+
+
+
+
+    /*
+    * data class Shufersal(val name:String, val id:Int, val brand:Int=1)*/
 
 }

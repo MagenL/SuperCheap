@@ -84,12 +84,13 @@ open class FunctionalFragment(): Fragment() {
 
 
 
-    fun checkIfFragmentLoadingData(loading: LiveData<Boolean>,dialog:Dialog=Dialog(requireContext())){
+    fun checkIfFragmentLoadingData(loading: LiveData<Boolean>,dialog:Dialog=Dialog(requireContext()), progress:LiveData<Int>?=null){
         requireContext().
         setDialogIfApplicationLoadingData(
             loading,
             dialog,
-            viewLifecycleOwner
+            viewLifecycleOwner,
+            progress
         )
 
     }

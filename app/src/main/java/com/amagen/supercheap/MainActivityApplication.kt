@@ -10,8 +10,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import com.amagen.supercheap.database.ApplicationDB
 import com.amagen.supercheap.databinding.ActivityMainApplicationBinding
 import com.amagen.supercheap.extensions.checkConnectivityStatus
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
+import com.chaquo.python.android.PyApplication
+import kotlinx.coroutines.launch
 
 class MainActivityApplication : AppCompatActivity() {
 
@@ -22,6 +27,14 @@ class MainActivityApplication : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.Theme_SuperCheap)
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(application))
+        }
+
+
+
+        instance=this
+        pyInstance =  Python.getInstance()
 
 
         binding = ActivityMainApplicationBinding.inflate(layoutInflater)
@@ -45,6 +58,9 @@ class MainActivityApplication : AppCompatActivity() {
 
 
 
+
+
+
     }
 
 
@@ -56,6 +72,15 @@ class MainActivityApplication : AppCompatActivity() {
     public fun showNavBar(){
         binding.navView.visibility= View.VISIBLE
     }
+
+    companion object{
+        var instance:MainActivityApplication?=null
+        var pyInstance:Python?=null
+    }
+    val db:ApplicationDB by lazy{
+        ApplicationDB.create(instance!!)
+    }
+
 
 
 

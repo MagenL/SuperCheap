@@ -1,14 +1,13 @@
 package com.amagen.supercheap
 
-import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
-import com.amagen.supercheap.database.ApplicationDB
 import com.amagen.supercheap.exceptions.MyExceptions
 import com.amagen.supercheap.models.*
+import com.amagen.supercheap.webScrapping.ShufersalWebScrapping
+import com.amagen.supercheap.webScrapping.ShufersalWebScrappingRepo
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
@@ -17,11 +16,12 @@ import org.json.JSONObject
 import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
 
-class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
+class MainActivityViewModel() : ViewModel() {
 
-    val db = ApplicationDB.create(application)
-    val py: Python
-    val mApplication = application
+
+    val db= MainActivityApplication.instance!!.db
+    private val py: Python = MainActivityApplication.pyInstance!!
+
 
     private var _downloadAndCreateSuperTableProcess :MutableLiveData<Boolean> = MutableLiveData(false)
     val downloadAndCreateSuperTableProcess:LiveData<Boolean> get() = _downloadAndCreateSuperTableProcess
@@ -38,13 +38,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
     val listOfSupers get() = superNameAndId
 
 
-    init {
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(application))
-        }
-        py = Python.getInstance()
 
-    }
 
 
     fun createSuperItemsTable(superId: Int, brand: BrandToId,link:String){
@@ -57,9 +51,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                         val callbackObject: PyObject = py
                             .getModule("python_service_gz_to_json")
                             .callAttr("download", link)
-                        if(callbackObject.isEmpty()){
-                            println("empty")
-                        }
+
                         if (brand == BrandToId.SHUFERSAL) {
                             val itemsJson = JSONObject(callbackObject.toString())
                                 .getJSONObject("root")
@@ -125,7 +117,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                     .callAttr("finder", brand.storeIdBaseURL, superId)
                     .toString()
                 if (link.isNullOrEmpty()) {
-                    throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+                    throw CancellationException(MainActivityApplication.instance!!.resources.getString(R.string.server_in_maintenance_please_try_again_later))
 
                 }
                 _downloadAndCreateSuperTableProcess.postValue(false)
@@ -135,7 +127,7 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
                 val link = py.getModule("find_vic_super_by_id")
                     .callAttr("getLinkByID", brand.priceBaseURL, superId).toString()
                 if (link.isNullOrEmpty()) {
-                    throw CancellationException(mApplication.resources.getString(R.string.server_in_maintenance_please_try_again_later))
+                    throw CancellationException(MainActivityApplication.instance!!.resources.getString(R.string.server_in_maintenance_please_try_again_later))
                 }
                 return link
             }
@@ -149,41 +141,41 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch(Dispatchers.Main) {
             _loadingProcessForDownloadingSupers.value = true
         }
+
         viewModelScope.launch(Dispatchers.IO) {
             if (db.superTableOfIdAndName().getAllSupers().isEmpty()) {
                 //shufersal
                 val TAG = "MainActivityViewModel"
                 Log.d(TAG, "db is empty ")
-                val pyShufersalIdAndName = py.getModule("get_shufersal_name_and_id_json")
-                    .callAttr("starter", BrandToId.SHUFERSAL.priceBaseURL)
-                val jsonarray = JSONArray(pyShufersalIdAndName.toString())
-                for (i in 0 until jsonarray.length()) {
-                    jsonarray.getJSONObject(i).put("brand", BrandToId.SHUFERSAL.brandId)
+
+                val shufersalJob = CoroutineScope(Dispatchers.IO).launch {
+                    db.superTableOfIdAndName().upsertTable(getShufersalTable())
                 }
-                db.superTableOfIdAndName().upsertTable(
-                    Gson().fromJson(
-                        jsonarray.toString(),
-                        TypeToken.getParameterized(
-                            List::class.java,
-                            IdToSuperName::class.java
-                        ).type
-                    )
-                )
+
 
                 //               victory
 
-                val pyVictoryBrandsIdAndName = py.getModule("victory_scrapping")
-                    .callAttr("starter", BrandToId.VICTORY.priceBaseURL)
-                val jsonArrayOfVictoryItems = JSONArray(pyVictoryBrandsIdAndName.toString())
-                db.superTableOfIdAndName().upsertTable(
-                    Gson().fromJson(
-                        jsonArrayOfVictoryItems.toString(),
-                        TypeToken.getParameterized(
-                            List::class.java,
-                            IdToSuperName::class.java
-                        ).type
+                val victoryJob = CoroutineScope(Dispatchers.IO).launch {
+                    val pyVictoryBrandsIdAndName = py.getModule("victory_scrapping")
+                        .callAttr("starter", BrandToId.VICTORY.priceBaseURL)
+                    val jsonArrayOfVictoryItems = JSONArray(pyVictoryBrandsIdAndName.toString())
+                    db.superTableOfIdAndName().upsertTable(
+                        Gson().fromJson(
+                            jsonArrayOfVictoryItems.toString(),
+                            TypeToken.getParameterized(
+                                List::class.java,
+                                IdToSuperName::class.java
+                            ).type
+                        )
                     )
-                )
+
+                }
+
+                shufersalJob.start()
+                victoryJob.start()
+                shufersalJob.join()
+                victoryJob.join()
+
 
             }
         }.invokeOnCompletion {
@@ -251,6 +243,13 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
             idToSuperName.superName = currentSuper.toString()
         }
 
+
+    }
+
+    private suspend fun getShufersalTable():List<IdToSuperName>{
+        return withContext(Dispatchers.IO){
+            ShufersalWebScrappingRepo.getShufersalDetails()
+        }
 
     }
 

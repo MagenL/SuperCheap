@@ -1,9 +1,11 @@
 package com.amagen.supercheap.ui.dashboard
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.*
 import com.amagen.supercheap.database.ApplicationDB
 import com.amagen.supercheap.models.UserFavouriteSupers
+import com.amagen.supercheap.webScrapping.ShufersalWebScrapping
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -55,4 +57,15 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             db.superTableOfIdAndName().upsertUserSingleSuper(superToAdd)
         }
     }
+    /*
+    ShufersalWebScrapping.progress.observe(viewLifecycleOwner){
+        println(it)
+        Toast.makeText(requireContext(), " "+it, Toast.LENGTH_SHORT).show()
+    }*/
+    fun getProgress():LiveData<Int>{
+        return ShufersalWebScrapping.progress
+
+    }
+
+
 }

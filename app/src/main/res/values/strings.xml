@@ -74,5 +74,6 @@
     <string name="find_share_and_re_use_carts_in_the_online_carts_screen">find, share and re-use carts in the Online Carts screen</string>
     <string name="in_home_screen_you_can_navigate_to_2_different_screens">In home screen you can navigate to 2 different screens -</string>
     <string name="search_product_nin_specific_super">create a list \nin specific super</string>
+    <string name="progress_precent" translatable="false">progress %s % </string>
 
 </resources>

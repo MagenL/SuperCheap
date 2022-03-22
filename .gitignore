@@ -16,3 +16,4 @@ local.properties
 *.json
 /gradle.properties
 /keystore.jks
+*.jks

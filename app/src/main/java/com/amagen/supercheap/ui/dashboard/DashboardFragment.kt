@@ -25,6 +25,7 @@ import com.amagen.supercheap.models.*
 import com.amagen.supercheap.ui.FunctionalFragment
 import com.amagen.supercheap.ui.home.recycleview.UserElementsRecycleView
 import com.amagen.supercheap.ui.home.searchproducts.singleSuperSearch.SuperSearchFragment
+import com.amagen.supercheap.webScrapping.ShufersalWebScrapping
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.item_dialog.*
 import kotlinx.coroutines.*
@@ -53,9 +54,15 @@ class DashboardFragment : FunctionalFragment(), UserElementsRecycleView.OnElemen
         super.onViewCreated(view, savedInstanceState)
 
 
+        dashboardViewModel.getProgress().observe(viewLifecycleOwner){
+            println(it)
+        }
+
+
+
         //--------------------if application is loading- display loading dialog-------------------//
         val loadingDialog= Dialog(requireContext())
-        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDownloadingSupers,loadingDialog)
+        checkIfFragmentLoadingData(mainActivityViewModel.loadingProcessForDownloadingSupers,loadingDialog, dashboardViewModel.getProgress())
 
 
 
